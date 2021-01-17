@@ -1,0 +1,26 @@
+{
+  "name": "whatsapp-backup",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare-output": "mkdir -p data/output && mkdir -p data/output/web && mkdir -p data/output/pdf",
+    "clear-web": "rm -rf data/output/web/*",
+    "clear-pdf": "rm -rf data/output/pdf/*",
+    "clear-output": "npm run clear-web && npm run clear-pdf",
+    "cp-data-to-web": "cp data/input/* data/output/web/ -r",
+    "cp-public-to-web-folders": "find data/output/web -mindepth 2 -type d | xargs -I {} cp src/public/* {}",
+    "build-web": "npm run prepare-output && npm run clear-web && npm run cp-data-to-web && npm run cp-public-to-web-folders",
+    "serve-web": "http-server data/output/web",
+    "start": "npm run build-web && npm run serve-web",
+    "build-pdfs": "cd src && node make-pdfs.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "http-server": "^0.12.3",
+    "puppeteer": "^5.5.0"
+  }
+}
