@@ -9,7 +9,7 @@
     "clear-web": "rm -rf data/output/web/*",
     "clear-pdf": "rm -rf data/output/pdf/*",
     "clear-output": "npm run clear-web && npm run clear-pdf",
-    "cp-data-to-web": "cp data/input/* data/output/web/ -r",
+    "cp-data-to-web": "cp -r data/input/* data/output/web/",
     "cp-public-to-web-folders": "find data/output/web -mindepth 2 -type d | xargs -I {} cp src/public/* {}",
     "build-web": "npm run prepare-output && npm run clear-web && npm run cp-data-to-web && npm run cp-public-to-web-folders",
     "serve-web": "http-server data/output/web",
