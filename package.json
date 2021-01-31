@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "copy-input-example-to-data": "cp -r data/input.example data/input",
     "prepare-output": "mkdir -p data/output && mkdir -p data/output/web && mkdir -p data/output/pdf",
     "clear-web": "rm -rf data/output/web/*",
     "clear-pdf": "rm -rf data/output/pdf/*",
