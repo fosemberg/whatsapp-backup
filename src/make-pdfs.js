@@ -1,3 +1,4 @@
+const flatMap = require('array.prototype.flatmap');
 const { execSync } = require("child_process");
 const puppeteer = require('puppeteer');
 const path = require('path');
@@ -8,7 +9,7 @@ const pdfPath = path.join(distPath, 'pdf')
 
 const yearsStdout = execSync(`ls ${webPath}`).toString();
 console.log(yearsStdout)
-const years = yearsStdout.split('\n')
+const years = yearsStdout.split('\n');
 years.pop()
 console.log(years)
 
@@ -32,7 +33,7 @@ const webChatPaths = webChatPathsStdout.split('\n')
 webChatPaths.pop();
 // console.log(webChatPaths)
 
-const chatPaths = scales.flatMap((scale => (
+const chatPaths = flatMap(scales, (scale => (
   webChatPaths.map(webChatPath => ({
     http: webChatPath.replace(webPath, 'http://localhost:8080'),
     pdf: `${webChatPath.replace(webPath, path.join(pdfPath, `scale${scale}`))}.pdf`,
