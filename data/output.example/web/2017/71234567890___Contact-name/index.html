@@ -1,0 +1,125 @@
+<html><head>
+<style>
+body {
+  background-color: gray;
+  margin: 0;
+}
+
+.chat {
+  display: flex;
+  flex-direction: column;
+}
+
+.message {
+  align-self: end;
+  background: white;
+  padding: 8px;
+  border-radius: 8px;
+  margin: 8px 16px;
+}
+
+.message_my {
+  align-self: flex-end;
+}
+
+.message__body {
+  position: relative;
+}
+
+.message .message__body:after {
+  content: ' ';
+  position: absolute;
+  width: 0;
+  height: 0;
+  top: -8px;
+  bottom: auto;
+  border: 20px solid;
+  border-color: white transparent transparent transparent;
+  z-index: -1;
+}
+
+.message_my .message__body:after {
+  left: auto;
+  right: -20px;
+}
+
+.message_not-my .message__body:after {
+  left: -20px;
+  right: auto;
+}
+
+.message__img {
+  max-width: 100%;
+}
+
+pre {
+   white-space: pre-wrap;
+   margin: 0;
+}
+</style>
+<script type="module">
+  import { h, render } from './preact.module.js';
+  import htm from './htm.module.js';
+
+  const getConfig = async (chats) => {
+    // get config from config.json
+    const configResponse = await fetch('./config.json')
+    if (configResponse.ok) {
+      return await configResponse.json()
+    } else {
+      // get notMyPhone from url, than get another phone as mine
+      const notMyPhoneMatch = window.location.href.match(/\d{11}/)
+      let myPhone
+      if (notMyPhoneMatch) {
+        const notMyPhone = notMyPhoneMatch[0]
+        const allPhones = Array.from(new Set(chats.map(({UserPhone}) => UserPhone)))
+        myPhone = allPhones.filter(phone => phone !== notMyPhone)[0]
+      } else {
+        // get myPhone as first phone in chats
+        myPhone = chats[0].UserPhone
+      }
+      return {
+        myPhone
+      }
+    }
+  }
+
+  (async () => {
+  const chatsResponse = await fetch('./chats.json')
+  const chats = await chatsResponse.json()
+
+  const { myPhone } = await getConfig(chats)
+
+  console.log('myPhone', myPhone)
+  console.log('chats', chats)
+
+  // Initialize htm with Preact
+  const html = htm.bind(h);
+
+  function App (props) {
+    return html`<div class="chat">
+	  ${props.chats.map(({MessageBody, MediaType, UserPhone, MediaLink}) => {
+	    const isImage = MediaType === "image"
+	    const cleanMediaLink = isImage && MediaLink
+        .replace('=HYPERLINK(""', '')
+        .replace('"")', '')
+      const cleanMessageBody = isImage
+        ? MessageBody.replace(cleanMediaLink, '')
+        : MessageBody
+	    return (
+        html`<div class="message message_${myPhone === UserPhone ? 'my' : 'not-my'}">
+          <div class="message__body">
+            <pre>${cleanMessageBody}</pre>
+            ${isImage && html`<img class="message__img" src="${cleanMediaLink}"></img>`}
+          </div>
+        </div>`
+	    )
+	  })}
+	  </div>
+	`;
+  }
+
+  render(html`<${App} chats=${chats} />`, document.body);
+  })()
+</script>
+</head><body></body></html>

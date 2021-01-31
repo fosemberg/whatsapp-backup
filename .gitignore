@@ -1,6 +1,8 @@
 .idea
 node_modules
-data
+data/*
+!data/input.example
+!data/output.example
 src/public/config.json
 .npmrc
 
