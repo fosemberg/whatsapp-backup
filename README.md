@@ -9,6 +9,10 @@
 - Собрать pdf-ки. *пока запущены чаты в браузере  
 ```npm run build-pdfs```
 
+## Примеры
+- [Посмотреть примеры pdf](data/output.example/pdf)
+- [Посмотреть примеры web](data/output.example/web)
+
 ## папка data. как собирались данные
 - устанавливалось расширение google chrome:  
     Backup WhatsApp Chats  
