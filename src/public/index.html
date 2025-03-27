@@ -103,16 +103,20 @@ pre {
   function App (props) {
     return html`<div class="chat">
 	  ${props.chats.map(({messageBody, messageType, phoneNum, mediaLink}) => {
-	    const isImage = messageType === "image"
-	    const cleanMediaLink = isImage && mediaLink
-      const cleanMessageBody = isImage
+	    const isVideo = messageType === 'video';
+      const isImage = messageType === "image";
+	    const cleanMediaLink =
+        isImage ? mediaLink :
+        isVideo && 'video/' + messageBody;
+      const cleanMessageBody = isImage || isVideo
         ? ''
-        : messageBody
+        : messageBody;
 	    return (
         html`<div class="message message_${myPhone === phoneNum ? 'my' : 'not-my'}">
           <div class="message__body">
             <pre>${cleanMessageBody}</pre>
             ${isImage && html`<img class="message__img" src="${cleanMediaLink}"></img>`}
+            ${isVideo && html`<video controls src="${cleanMediaLink}"></img>`}
           </div>
         </div>`
 	    )
