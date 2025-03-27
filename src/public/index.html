@@ -102,11 +102,11 @@ pre {
 
   function App (props) {
     return html`<div class="chat">
-	  ${props.chats.map(({messageBody, messageType, phoneNum, mediaLink}) => {
+	  ${props.chats.map(({messageBody, messageType, phoneNum}) => {
 	    const isVideo = messageType === 'video';
       const isImage = messageType === "image";
-	    const cleanMediaLink =
-        isImage ? mediaLink :
+	    const mediaLink =
+        isImage ? 'image/' + messageBody :
         isVideo && 'video/' + messageBody;
       const cleanMessageBody = isImage || isVideo
         ? ''
@@ -115,8 +115,8 @@ pre {
         html`<div class="message message_${myPhone === phoneNum ? 'my' : 'not-my'}">
           <div class="message__body">
             <pre>${cleanMessageBody}</pre>
-            ${isImage && html`<img class="message__img" src="${cleanMediaLink}"></img>`}
-            ${isVideo && html`<video controls src="${cleanMediaLink}"></img>`}
+            ${isImage && html`<img class="message__img" src="${mediaLink}"></img>`}
+            ${isVideo && html`<video controls src="${mediaLink}"></img>`}
           </div>
         </div>`
 	    )
