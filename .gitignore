@@ -5,4 +5,4 @@ data/*
 !data/output.example
 src/public/config.json
 .npmrc
-
+copy_to_data.sh
