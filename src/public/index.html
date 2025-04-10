@@ -67,7 +67,7 @@ pre {
 
   const getConfig = async (chats) => {
     // get config from config.json
-    const configResponse = await fetch('./config.json')
+    const configResponse = await fetch('./config.json', {cache: "no-store"});
     if (configResponse.ok) {
       return await configResponse.json()
     } else {
