@@ -106,11 +106,13 @@ pre {
 	    const isVideo = messageType === 'video';
       const isImage = messageType === 'image';
       const isDocument = messageType === 'document';
+      const isSticker = messageType === 'sticker';
 	    const mediaLink =
         isImage ? 'image/' + messageBody :
         isVideo ? 'video/' + messageBody :
-        isDocument && 'document/' + messageBody;
-      const cleanMessageBody = isImage || isVideo || isDocument
+        isDocument ? 'document/' + messageBody :
+        isSticker && 'sticker/' + messageBody;
+      const cleanMessageBody = isImage || isVideo || isDocument || isSticker
         ? ''
         : messageBody;
 	    return (
@@ -120,6 +122,7 @@ pre {
             ${isImage && html`<img class="message__img" src="${mediaLink}"/>`}
             ${isVideo && html`<video controls src="${mediaLink}"/>`}
             ${isDocument && html`<a href="${mediaLink}">${messageBody}</a>`}
+            ${isSticker && html`<img class="message__img" src="${mediaLink}"/>`}
           </div>
         </div>`
 	    )
