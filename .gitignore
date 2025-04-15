@@ -5,6 +5,3 @@ data/*
 !data/output.example
 src/public/config.json
 .npmrc
-copy_to_data.sh
-update_from_extension.sh
-update_files_from_extension.js
