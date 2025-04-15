@@ -1,4 +1,0 @@
-from=./data
-to=../whatsapp-backup-data
-cp -r $from/input $to/input
-cp -r $from/output $to/output
