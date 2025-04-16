@@ -58,7 +58,8 @@ echo "$zip_files" | while read -r zip_file; do
     fi
     
     # Try to find a matching directory by chat name
-    chat_name_clean=$(echo "$chat_name" | tr -d ' ' | tr '[:upper:]' '[:lower:]')
+    # Remove spaces, +, and convert to lowercase for better matching
+    chat_name_clean=$(echo "$chat_name" | tr -d ' +' | tr '[:upper:]' '[:lower:]')
     chat_name_clean=${chat_name_clean//-/}
     
     # Find the corresponding directory in data/input by matching the chat name
