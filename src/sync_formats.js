@@ -745,6 +745,7 @@ function convertToNativeDate(isoDate, originalFormat = "US") {
 // Synchronize media files between formats
 function syncMediaFiles(chatDir, messages) {
   const mediaTypes = ["image", "document", "video", "audio"];
+  const additionalSearchDirs = ["native_backups", "sticker"]; // Additional places to look for files
 
   console.log("Syncing media files...");
 
@@ -762,34 +763,73 @@ function syncMediaFiles(chatDir, messages) {
     (msg) => msg.isAttachment && msg.messageBody
   );
 
+  let foundCount = 0;
+  let movedCount = 0;
+  let missingCount = 0;
+
   for (const msg of attachmentMessages) {
     const filename = msg.messageBody;
-    const sourceDir = getDirectoryForMessageType(msg.messageType);
-    const sourceFile = path.join(chatDir, sourceDir, filename);
+    if (!filename || filename === "undefined") continue;
 
-    // Check if file exists in correct location
-    if (!fs.existsSync(sourceFile)) {
-      // Try to find file in other directories
-      let found = false;
-      for (const type of mediaTypes) {
-        const altFile = path.join(chatDir, type, filename);
+    const targetDir = getDirectoryForMessageType(msg.messageType);
+    const targetFile = path.join(chatDir, targetDir, filename);
+
+    // Check if file already exists in correct location
+    if (fs.existsSync(targetFile)) {
+      foundCount++;
+      continue;
+    }
+
+    // Try to find file in other standard media directories
+    let found = false;
+    for (const type of mediaTypes) {
+      if (type === targetDir) continue; // Skip target directory
+      const altFile = path.join(chatDir, type, filename);
+      if (fs.existsSync(altFile)) {
+        try {
+          fs.copyFileSync(altFile, targetFile);
+          console.log(`Moved ${filename} from ${type}/ to ${targetDir}/`);
+          found = true;
+          movedCount++;
+          break;
+        } catch (error) {
+          console.warn(`Failed to copy ${filename}:`, error.message);
+        }
+      }
+    }
+
+    // If still not found, search in additional directories (like native_backups)
+    if (!found) {
+      for (const searchDir of additionalSearchDirs) {
+        const searchPath = path.join(chatDir, searchDir);
+        if (!fs.existsSync(searchPath)) continue;
+
+        const altFile = path.join(searchPath, filename);
         if (fs.existsSync(altFile)) {
           try {
-            fs.copyFileSync(altFile, sourceFile);
-            console.log(`Moved ${filename} from ${type}/ to ${sourceDir}/`);
+            fs.copyFileSync(altFile, targetFile);
+            console.log(
+              `Moved ${filename} from ${searchDir}/ to ${targetDir}/`
+            );
             found = true;
+            movedCount++;
             break;
           } catch (error) {
             console.warn(`Failed to copy ${filename}:`, error.message);
           }
         }
       }
+    }
 
-      if (!found) {
-        console.warn(`Media file not found: ${filename}`);
-      }
+    if (!found) {
+      console.warn(`Media file not found: ${filename}`);
+      missingCount++;
     }
   }
+
+  console.log(
+    `📊 Media sync summary: ${foundCount} already in place, ${movedCount} moved, ${missingCount} missing`
+  );
 }
 
 // Get directory for message type (from existing converter)
