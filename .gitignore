@@ -5,3 +5,4 @@ data/*
 !data/output.example
 src/public/config.json
 .npmrc
+test-output
