@@ -11,11 +11,31 @@ function showSummary(chatDir) {
   console.log("=== WhatsApp Sync Summary ===\n");
 
   const jsonPath = path.join(chatDir, "chats.json");
-  const nativePath = path.join(
-    chatDir,
-    "native_backups",
-    "WhatsApp Chat with +12 345 67 89 0.txt"
-  );
+  // Find WhatsApp Chat file dynamically by pattern
+  // Prioritize non-test phone numbers (avoid +12 345 67 89 0 and similar test patterns)
+  const nativeDir = path.join(chatDir, "native_backups");
+  let nativePath = null;
+  if (fs.existsSync(nativeDir)) {
+    const files = fs.readdirSync(nativeDir);
+    const chatFiles = files.filter((file) =>
+      file.match(/^WhatsApp Chat with \+\d+.*\.txt$/)
+    );
+
+    // First try to find non-test numbers (avoid common test patterns)
+    const testPatterns = [/\+12 345 67 89 0/, /\+1234567890/, /\+9876543210/];
+    let chatFile = chatFiles.find(
+      (file) => !testPatterns.some((pattern) => pattern.test(file))
+    );
+
+    // If no non-test file found, use any chat file
+    if (!chatFile && chatFiles.length > 0) {
+      chatFile = chatFiles[0];
+    }
+
+    if (chatFile) {
+      nativePath = path.join(nativeDir, chatFile);
+    }
+  }
 
   if (fs.existsSync(jsonPath)) {
     const jsonData = JSON.parse(fs.readFileSync(jsonPath, "utf8"));

@@ -489,14 +489,34 @@ function syncFormats(chatDirectory) {
 
   const jsonPath = path.join(chatDirectory, "chats.json");
   const nativeDir = path.join(chatDirectory, "native_backups");
-  const nativePath = path.join(
-    nativeDir,
-    "WhatsApp Chat with +12 345 67 89 0.txt"
-  );
+  // Find WhatsApp Chat file dynamically by pattern
+  // Prioritize non-test phone numbers (avoid +12 345 67 89 0 and similar test patterns)
+  let nativePath = null;
+  if (fs.existsSync(nativeDir)) {
+    const files = fs.readdirSync(nativeDir);
+    const chatFiles = files.filter((file) =>
+      file.match(/^WhatsApp Chat with \+\d+.*\.txt$/)
+    );
+
+    // First try to find non-test numbers (avoid common test patterns)
+    const testPatterns = [/\+12 345 67 89 0/, /\+1234567890/, /\+9876543210/];
+    let chatFile = chatFiles.find(
+      (file) => !testPatterns.some((pattern) => pattern.test(file))
+    );
+
+    // If no non-test file found, use any chat file
+    if (!chatFile && chatFiles.length > 0) {
+      chatFile = chatFiles[0];
+    }
+
+    if (chatFile) {
+      nativePath = path.join(nativeDir, chatFile);
+    }
+  }
 
   // Check if files exist
   const hasJson = fs.existsSync(jsonPath);
-  const hasNative = fs.existsSync(nativePath);
+  const hasNative = nativePath && fs.existsSync(nativePath);
 
   if (!hasJson && !hasNative) {
     console.error(
@@ -506,7 +526,14 @@ function syncFormats(chatDirectory) {
   }
 
   console.log(`📄 JSON file: ${hasJson ? "✅ Found" : "❌ Missing"}`);
-  console.log(`📄 Native file: ${hasNative ? "✅ Found" : "❌ Missing"}\n`);
+  if (hasNative) {
+    console.log(`📄 Native file: ✅ Found - ${path.basename(nativePath)}`);
+  } else {
+    console.log(
+      `📄 Native file: ❌ Missing (looking for WhatsApp Chat with +[number].txt)`
+    );
+  }
+  console.log("");
 
   let jsonMessages = [];
   let nativeMessages = [];
@@ -558,6 +585,12 @@ function syncFormats(chatDirectory) {
     fs.mkdirSync(nativeDir, { recursive: true });
   }
   const nativeOutput = messagesToNative(mergedMessages);
+
+  // If no native file was found, create one with a generic name
+  if (!nativePath) {
+    nativePath = path.join(nativeDir, "WhatsApp Chat.txt");
+  }
+
   fs.writeFileSync(nativePath, nativeOutput, "utf8");
   console.log(`✅ Updated ${nativePath} (${mergedMessages.length} messages)`);
 
