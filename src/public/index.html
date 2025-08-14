@@ -69,7 +69,12 @@ pre {
     // get config from config.json
     const configResponse = await fetch('./config.json', {cache: "no-store"});
     if (configResponse.ok) {
-      return await configResponse.json()
+      const config = await configResponse.json();
+      // Ensure backward compatibility
+      if (!config.myIdentifiers && config.myPhone) {
+        config.myIdentifiers = [config.myPhone];
+      }
+      return config;
     } else {
       // get notMyPhone from url, than get another phone as mine
       const notMyPhoneMatch = window.location.href.match(/\d{11}/)
@@ -83,7 +88,8 @@ pre {
         myPhone = chats[0].phoneNum
       }
       return {
-        myPhone
+        myPhone,
+        myIdentifiers: [myPhone]
       }
     }
   }
@@ -92,9 +98,27 @@ pre {
   const chatsResponse = await fetch('./chats.json')
   const chats = await chatsResponse.json()
 
-  const { myPhone } = await getConfig(chats)
+  const { myPhone, myIdentifiers } = await getConfig(chats)
 
   console.log('myPhone', myPhone)
+  console.log('myIdentifiers', myIdentifiers)
+  
+  // Smart function to check if message is mine
+  const isMyMessage = (chat) => {
+    // Check phoneNum first (most reliable)
+    if (chat.phoneNum && myIdentifiers.includes(chat.phoneNum)) {
+      return true;
+    }
+    // Check formattedName as fallback
+    if (chat.formattedName && myIdentifiers.includes(chat.formattedName)) {
+      return true;
+    }
+    // Legacy check for backward compatibility
+    if (myPhone === chat.phoneNum) {
+      return true;
+    }
+    return false;
+  }
   console.log('chats', chats)
 
   // Initialize htm with Preact
@@ -102,7 +126,8 @@ pre {
 
   function App (props) {
     return html`<div class="chat">
-	  ${props.chats.map(({messageBody, messageType, phoneNum}) => {
+	  ${props.chats.map((chat) => {
+      const {messageBody, messageType, phoneNum} = chat;
       // Define media types for better maintainability
       const MEDIA_TYPE = {
         IMAGE: 'image',
@@ -117,7 +142,7 @@ pre {
       const cleanMessageBody = isMediaMessage ? '' : messageBody;
       
 	    return (
-        html`<div class="message message_${myPhone === phoneNum ? 'my' : 'not-my'}">
+        html`<div class="message message_${isMyMessage(chat) ? 'my' : 'not-my'}">
           <div class="message__body">
             <pre>${cleanMessageBody}</pre>
             ${messageType === MEDIA_TYPE.IMAGE && html`<img class="message__img" src="${mediaLink}"/>`}

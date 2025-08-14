@@ -652,9 +652,15 @@ function mergeMessages(jsonMessages, nativeMessages) {
 
 // Convert merged messages back to JSON format
 function messagesToJson(messages) {
+  // First pass: build phone mapping for messages without phoneNum
+  const phoneMapping = buildPhoneMappingFromMessages(messages);
+
   return messages.map((msg) => ({
     country: msg.country,
-    phoneNum: msg.phoneNum,
+    phoneNum:
+      msg.phoneNum ||
+      phoneMapping.get(msg.formattedName) ||
+      extractPhoneFromMessage(msg),
     formattedName: msg.formattedName,
     ...(msg.displayName && { displayName: msg.displayName }),
     messageTime: msg.messageTime,
@@ -662,6 +668,36 @@ function messagesToJson(messages) {
     messageBody: msg.messageBody,
     messageId: msg.messageId,
   }));
+}
+
+// Build phone mapping by analyzing messages with phoneNum
+function buildPhoneMappingFromMessages(messages) {
+  const mapping = new Map();
+
+  // Find patterns: formattedName -> phoneNum
+  messages.forEach((msg) => {
+    if (msg.phoneNum && msg.formattedName) {
+      mapping.set(msg.formattedName, msg.phoneNum);
+    }
+  });
+
+  return mapping;
+}
+
+// Extract phone number from message for web display
+function extractPhoneFromMessage(msg) {
+  // Try to extract from formattedName if it looks like a phone
+  if (msg.formattedName && /^\+?\d+[\s\d\-\(\)]*$/.test(msg.formattedName)) {
+    return msg.formattedName.replace(/[\s\-\(\)]/g, "");
+  }
+
+  // For "You" messages, try to find the most common phoneNum among "You" messages
+  if (msg.formattedName === "You") {
+    // This will be set dynamically during processing
+    return msg.inferredPhone || null;
+  }
+
+  return null;
 }
 
 // Convert merged messages to native format
