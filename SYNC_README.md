@@ -57,12 +57,12 @@ chat_directory/
 
 1. **File check**: Finds available formats
 2. **Parsing**: Reads and analyzes both formats
-3. **Date normalization**: Brings all dates to unified format
+3. **Date normalization**: Brings all dates to unified format while preserving original format info
 4. **Merging**: Combines messages, removing duplicates
 5. **Sorting**: Orders chronologically
 6. **Backups**: Creates backup copies of originals
 7. **Media sync**: Organizes attachments by types
-8. **Writing**: Saves synchronized formats
+8. **Writing**: Saves synchronized formats with original date formats preserved
 
 ## 📊 Example Output
 

@@ -172,6 +172,14 @@ function parseNativeFile(filePath) {
         country = "Unknown";
       }
 
+      // Determine original date format for preservation based on original line
+      let originalDateFormat = "US"; // Default to US format
+      if (line.match(DATE_FORMATS.MESSAGE_EU)) {
+        originalDateFormat = "EU";
+      } else if (line.match(DATE_FORMATS.MESSAGE_EU_NO_BRACKETS)) {
+        originalDateFormat = "EU_NO_BRACKETS";
+      }
+
       currentMessage = {
         country: country || "Unknown",
         phoneNum: phoneNum || null,
@@ -183,6 +191,7 @@ function parseNativeFile(filePath) {
         timestamp: new Date(normalizedDate).getTime(),
         source: "native",
         isAttachment,
+        originalDateFormat, // Preserve original date format
       };
 
       if (displayName) {
@@ -217,6 +226,7 @@ function parseNativeFile(filePath) {
             timestamp: currentMessage.timestamp,
             source: "native",
             isAttachment: false,
+            originalDateFormat: currentMessage.originalDateFormat, // Preserve format
           };
 
           if (currentMessage.displayName) {
@@ -247,6 +257,7 @@ function parseJsonFile(filePath) {
     timestamp: new Date(msg.messageTime).getTime(),
     source: "json",
     isAttachment: msg.messageType !== "chat",
+    originalDateFormat: "US", // JSON messages default to US format for display
   }));
 }
 
@@ -335,14 +346,31 @@ function messagesToNative(messages) {
   }
 
   for (const msg of messages) {
-    const nativeDate = convertToNativeDate(msg.messageTime);
+    const nativeDate = convertToNativeDate(
+      msg.messageTime,
+      msg.originalDateFormat
+    );
     const senderName = msg.displayName || msg.formattedName || msg.phoneNum;
     let line = "";
 
     if (msg.messageType === "chat") {
-      line = `${nativeDate} - ${senderName}: ${msg.messageBody}`;
+      if (
+        msg.originalDateFormat === "EU" ||
+        msg.originalDateFormat === "EU_NO_BRACKETS"
+      ) {
+        line = `${nativeDate} ${senderName}: ${msg.messageBody}`;
+      } else {
+        line = `${nativeDate} - ${senderName}: ${msg.messageBody}`;
+      }
     } else {
-      line = `${nativeDate} - ${senderName}: ${msg.messageBody} (file attached)`;
+      if (
+        msg.originalDateFormat === "EU" ||
+        msg.originalDateFormat === "EU_NO_BRACKETS"
+      ) {
+        line = `${nativeDate} ${senderName}: ${msg.messageBody} (file attached)`;
+      } else {
+        line = `${nativeDate} - ${senderName}: ${msg.messageBody} (file attached)`;
+      }
     }
 
     nativeContent += line + "\n";
@@ -351,16 +379,38 @@ function messagesToNative(messages) {
   return nativeContent;
 }
 
-// Convert ISO date to native WhatsApp format
-function convertToNativeDate(isoDate) {
+// Convert ISO date to native WhatsApp format, preserving original format
+function convertToNativeDate(isoDate, originalFormat = "US") {
   const date = new Date(isoDate);
   const month = date.getMonth() + 1;
   const day = date.getDate();
-  const year = date.getFullYear().toString().slice(-2);
+  const year = date.getFullYear();
   const hours = date.getHours();
   const minutes = date.getMinutes().toString().padStart(2, "0");
+  const seconds = date.getSeconds().toString().padStart(2, "0");
 
-  return `${month}/${day}/${year}, ${hours}:${minutes}`;
+  switch (originalFormat) {
+    case "EU":
+      // Format: [DD.MM.YYYY, HH:MM:SS]
+      return `[${day.toString().padStart(2, "0")}.${month
+        .toString()
+        .padStart(2, "0")}.${year}, ${hours
+        .toString()
+        .padStart(2, "0")}:${minutes}:${seconds}]`;
+
+    case "EU_NO_BRACKETS":
+      // Format: DD.MM.YYYY, HH:MM:SS
+      return `${day.toString().padStart(2, "0")}.${month
+        .toString()
+        .padStart(2, "0")}.${year}, ${hours
+        .toString()
+        .padStart(2, "0")}:${minutes}:${seconds}`;
+
+    default:
+      // US format: M/D/YY, H:MM
+      const shortYear = year.toString().slice(-2);
+      return `${month}/${day}/${shortYear}, ${hours}:${minutes}`;
+  }
 }
 
 // Synchronize media files between formats
