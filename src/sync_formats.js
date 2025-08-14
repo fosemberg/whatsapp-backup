@@ -384,25 +384,57 @@ function buildSenderMapping(jsonMessages, nativeMessages) {
     }
   }
 
-  // Handle phone number normalization
+  // Handle phone number normalization and link with names
+  const phoneToNameMapping = new Map();
+
   phoneStats.forEach(([sender, stats]) => {
     // Normalize phone format: remove spaces, keep only digits and +
     const normalizedPhone = sender.replace(/[\s\-\(\)]/g, "");
     mapping.set(sender, normalizedPhone);
+
+    // Try to find corresponding name for this phone number
+    // Look at messages from this phone to see if there are displayNames
+    const associatedNames = new Set();
+    allMessages.forEach((msg) => {
+      if (
+        (msg.formattedName === sender || msg.phoneNum === normalizedPhone) &&
+        msg.displayName
+      ) {
+        associatedNames.add(msg.displayName.trim());
+      }
+    });
+
+    if (associatedNames.size > 0) {
+      const primaryName = Array.from(associatedNames)[0];
+      phoneToNameMapping.set(normalizedPhone, primaryName);
+      console.log(`🔗 Linked phone ${normalizedPhone} → name "${primaryName}"`);
+    }
   });
 
-  // Handle display names
+  // Handle display names and link back to phone numbers
   nameStats.forEach(([sender, stats]) => {
     if (mapping.has(sender)) return; // Already mapped
 
-    // Prefer display name if available
-    if (stats.displayNames.size > 0) {
-      const mostCommonDisplayName = Array.from(stats.displayNames)[0];
-      mapping.set(sender, mostCommonDisplayName);
-    } else {
-      // Try to extract shorter name from long formatted names
-      const shortName = extractShortName(sender);
-      mapping.set(sender, shortName);
+    // Check if this name is associated with any phone number
+    let linkedToPhone = false;
+    for (const [phone, name] of phoneToNameMapping) {
+      if (name === sender || sender.includes(name) || name.includes(sender)) {
+        mapping.set(sender, phone); // Map name to normalized phone
+        console.log(`🔗 Linked name "${sender}" → phone ${phone}`);
+        linkedToPhone = true;
+        break;
+      }
+    }
+
+    if (!linkedToPhone) {
+      // No phone link found, use display name or extract short name
+      if (stats.displayNames.size > 0) {
+        const mostCommonDisplayName = Array.from(stats.displayNames)[0];
+        mapping.set(sender, mostCommonDisplayName);
+      } else {
+        const shortName = extractShortName(sender);
+        mapping.set(sender, shortName);
+      }
     }
   });
 
@@ -507,6 +539,32 @@ function createTimeAwareHash(msg, senderMapping = null) {
   return `${normalizedSender}:${normalizedType}:${normalizedBody}:${roundedTimestamp}`;
 }
 
+// Deduplicate messages within a single source
+function deduplicateMessages(messages, sourceName, senderMapping = null) {
+  console.log(`🧹 Deduplicating ${messages.length} ${sourceName} messages...`);
+
+  const seenHashes = new Set();
+  const uniqueMessages = [];
+  let duplicatesRemoved = 0;
+
+  for (const msg of messages) {
+    const contentHash = createMessageHash(msg, senderMapping);
+
+    if (seenHashes.has(contentHash)) {
+      duplicatesRemoved++;
+      continue;
+    }
+
+    seenHashes.add(contentHash);
+    uniqueMessages.push(msg);
+  }
+
+  console.log(
+    `   Removed ${duplicatesRemoved} duplicates, ${uniqueMessages.length} unique messages remain`
+  );
+  return uniqueMessages;
+}
+
 // Merge messages from both sources, removing duplicates and maintaining chronological order
 function mergeMessages(jsonMessages, nativeMessages) {
   console.log(
@@ -516,6 +574,18 @@ function mergeMessages(jsonMessages, nativeMessages) {
   // Build intelligent sender mapping based on message analysis
   console.log("🔍 Analyzing sender patterns for smart deduplication...");
   const senderMapping = buildSenderMapping(jsonMessages, nativeMessages);
+
+  // First, deduplicate within each source
+  const uniqueJsonMessages = deduplicateMessages(
+    jsonMessages,
+    "JSON",
+    senderMapping
+  );
+  const uniqueNativeMessages = deduplicateMessages(
+    nativeMessages,
+    "Native",
+    senderMapping
+  );
 
   console.log(`📋 Detected ${senderMapping.size} sender mappings:`);
   Array.from(senderMapping.entries())
@@ -531,8 +601,8 @@ function mergeMessages(jsonMessages, nativeMessages) {
   const seenTimeAwareHashes = new Set();
   const mergedMessages = [];
 
-  // Combine all messages and sort by timestamp
-  const allMessages = [...jsonMessages, ...nativeMessages].sort(
+  // Combine all unique messages and sort by timestamp
+  const allMessages = [...uniqueJsonMessages, ...uniqueNativeMessages].sort(
     (a, b) => a.timestamp - b.timestamp
   );
 
@@ -567,8 +637,15 @@ function mergeMessages(jsonMessages, nativeMessages) {
     mergedMessages.push(msg);
   }
 
+  const totalInputMessages = jsonMessages.length + nativeMessages.length;
+  const totalDuplicatesRemoved =
+    jsonMessages.length -
+    uniqueJsonMessages.length +
+    (nativeMessages.length - uniqueNativeMessages.length) +
+    duplicatesRemoved;
+
   console.log(
-    `Merged result: ${mergedMessages.length} unique messages (removed ${duplicatesRemoved} duplicates)`
+    `Merged result: ${mergedMessages.length} unique messages (removed ${totalDuplicatesRemoved} duplicates total)`
   );
   return mergedMessages;
 }
