@@ -1,34 +1,34 @@
 # whatsapp-backup
 
-Проект создан для того, чтобы хранить backup whatsapp в html и pdf формате. Для начала нужно собрать бэкап в виде chats.json и прикрепленных к сообщениям файлов, как создать эти данные читать далее.
+A project created to store WhatsApp backups in HTML and PDF formats. To get started, you need to collect the backup as chats.json and attached message files. See below for how to create this data.
 
-## Запуск проекта:
-- установка зависимостей  
+## Running the project:
+- Install dependencies  
 ```npm i```
-- скопировать пример данных, в папку данных  
+- Copy example data to the data folder  
 ```npm run copy-input-example-to-data```
-- собрать чаты в html и запустить в браузере  
+- Build chats in HTML and run in browser  
 ```npm run start```
-- Собрать pdf-ки. *пока запущены чаты в браузере  
+- Build PDFs. *while chats are running in browser  
 ```npm run build-pdfs```
 
-## Примеры
-- [Посмотреть примеры pdf](data/output.example/pdf)
-- [Посмотреть примеры web](data/output.example/web)
+## Examples
+- [View PDF examples](data/output.example/pdf)
+- [View web examples](data/output.example/web)
 
-## папка data. как собирались данные
+## data folder. how the data was collected
 
 ### 2025
 
-- устанавливалось расширение google chrome:  
+- Google Chrome extension was installed:  
     WhatsApp Chats Backup & WA Contacts Extractor Free Extension
     Version 1.1.24
     Updated: February 17, 2025
     Size: 2.44MiB
   https://chromewebstore.google.com/detail/whatsapp-chats-backup-wa/eelhmnjkbjmlcglpiaegojkoolckdgaj?hl=en
-- открываем web версия whatsapp:  
+- Open web version of WhatsApp:  
     https://web.whatsapp.com/
-- открываем расширение:  
+- Open extension:  
     Chats Backup  
     Choose Export Time:  
     - From: 01/01/2017
@@ -37,22 +37,22 @@
 
 ### outdated
 
-- устанавливалось расширение google chrome:  
+- Google Chrome extension was installed:  
     Backup WhatsApp Chats  
     Version: 1.0.2  
     Updated: 6 January 2021  
     Size: 209KiB  
   https://chrome.google.com/webstore/detail/backup-whatsapp-chats/ibpjljmgmpnfbjbjdajbldfekkcnencp?hl=en-GB
-- отрывалась web версия whatsapp:  
+- Web version of WhatsApp was opened:  
     https://web.whatsapp.com/
-- просматривались все прикрепленные фотографии и видео, чтобы они скачались расширением, иначе расширение на загрузить фото, которые вы не открывали в клиенте
-- открывалось расширение:  
+- All attached photos and videos were viewed so they would be downloaded by the extension, otherwise the extension won't download photos you haven't opened in the client
+- Extension was opened:  
     Backup WhatsApp Chats  
-    \* диапазон больше года выбрать нельзя   
-    параметры:
+    \* range of more than a year cannot be selected   
+    parameters:
     - From: 01/01/2017
     - To: 01/01/2018
     - [*] Download media  
 
 ## TODO
-- смержить историю по годам, чтобы можно было смотреть не по годам, а по людя
+- Merge history by years so you can view by people rather than by years

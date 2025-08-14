@@ -1,70 +1,70 @@
 # WhatsApp Format Synchronizer
 
-Скрипт `sync_formats.js` обеспечивает двустороннюю синхронизацию между форматами WhatsApp:
-- JSON формат (`chats.json`)
-- Native формат (`native_backups/WhatsApp Chat with +12 345 67 89 0.txt`)
+The `sync_formats.js` script provides bidirectional synchronization between WhatsApp formats:
+- JSON format (`chats.json`)
+- Native format (`native_backups/WhatsApp Chat with +12 345 67 89 0.txt`)
 
-## 🎯 Основные возможности
+## 🎯 Key Features
 
-- **Двусторонняя синхронизация**: Дополняет один формат данными из другого
-- **Хронологический порядок**: Все сообщения сортируются по времени
-- **Нормализация дат**: Поддерживает множественные форматы дат
-- **Удаление дубликатов**: Автоматически находит и объединяет похожие сообщения
-- **Синхронизация медиафайлов**: Копирует и организует вложения
-- **Автоматические бэкапы**: Создает резервные копии перед изменениями
+- **Bidirectional synchronization**: Supplements one format with data from another
+- **Chronological order**: All messages sorted by time
+- **Date normalization**: Supports multiple date formats
+- **Duplicate removal**: Automatically finds and merges similar messages
+- **Media synchronization**: Copies and organizes attachments
+- **Automatic backups**: Creates backup copies before changes
 
-## 📅 Поддерживаемые форматы дат
+## 📅 Supported Date Formats
 
-### Native формат поддерживает:
+### Native format supports:
 
-1. **Американский формат**: `3/4/25, 0:50`
-2. **Европейский с скобками**: `[20.06.2025, 12:29:30]`
-3. **Европейский без скобок**: `04.07.2025, 20:27:42`
+1. **American format**: `3/4/25, 0:50`
+2. **European with brackets**: `[20.06.2025, 12:29:30]`
+3. **European without brackets**: `04.07.2025, 20:27:42`
 
-### JSON формат:
-- **ISO формат**: `2025-02-28 18:50:57`
+### JSON format:
+- **ISO format**: `2025-02-28 18:50:57`
 
-Все форматы автоматически конвертируются в единый ISO формат для синхронизации.
+All formats are automatically converted to unified ISO format for synchronization.
 
-## 🚀 Использование
+## 🚀 Usage
 
-### Базовое использование
+### Basic usage
 
 ```bash
-node src/sync_formats.js <путь_к_папке_чата>
+node src/sync_formats.js <path_to_chat_folder>
 ```
 
-### Пример
+### Example
 
 ```bash
 node src/sync_formats.js data/input/2025/1234567890___Test-Chat
 ```
 
-## 📁 Структура папки чата
+## 📁 Chat Folder Structure
 
 ```
 chat_directory/
-├── chats.json                     # JSON формат (опционально)
-├── native_backups/               # Папка с native форматом
+├── chats.json                     # JSON format (optional)
+├── native_backups/               # Native format folder
 │   └── WhatsApp Chat with +12 345 67 89 0.txt
-├── image/                        # Изображения
-├── document/                     # Документы
-├── video/                        # Видео
-└── audio/                        # Аудио
+├── image/                        # Images
+├── document/                     # Documents
+├── video/                        # Videos
+└── audio/                        # Audio
 ```
 
-## 🔄 Процесс синхронизации
+## 🔄 Synchronization Process
 
-1. **Проверка файлов**: Находит доступные форматы
-2. **Парсинг**: Читает и анализирует оба формата
-3. **Нормализация дат**: Приводит все даты к единому формату
-4. **Слияние**: Объединяет сообщения, удаляя дубликаты
-5. **Сортировка**: Упорядочивает по хронологии
-6. **Бэкапы**: Создает резервные копии оригиналов
-7. **Синхронизация медиа**: Организует вложения по типам
-8. **Запись**: Сохраняет синхронизированные форматы
+1. **File check**: Finds available formats
+2. **Parsing**: Reads and analyzes both formats
+3. **Date normalization**: Brings all dates to unified format
+4. **Merging**: Combines messages, removing duplicates
+5. **Sorting**: Orders chronologically
+6. **Backups**: Creates backup copies of originals
+7. **Media sync**: Organizes attachments by types
+8. **Writing**: Saves synchronized formats
 
-## 📊 Пример вывода
+## 📊 Example Output
 
 ```
 === WhatsApp Format Synchronizer ===
@@ -99,25 +99,25 @@ Media file not found: some-missing-file.jpg
 📊 Final result: 8137 messages in chronological order
 ```
 
-## 🔧 Особенности работы
+## 🔧 Features
 
-### Определение дубликатов
+### Duplicate Detection
 
-Скрипт считает сообщения дубликатами если:
-- Совпадает содержимое и тип сообщения
-- Совпадает отправитель
-- Время отправки различается менее чем на 1 минуту
+The script considers messages duplicates if:
+- Content and message type match
+- Sender matches
+- Send time differs by less than 1 minute
 
-### Обработка вложений
+### Attachment Handling
 
-- **Автоматическое определение типа** по расширению файла
-- **Создание недостающих папок** (image/, document/, video/, audio/)
-- **Перемещение файлов** между папками при необходимости
-- **Предупреждения о недостающих файлах**
+- **Automatic type detection** by file extension
+- **Creating missing folders** (image/, document/, video/, audio/)
+- **Moving files** between folders when necessary
+- **Warnings about missing files**
 
-### Форматы сообщений
+### Message Formats
 
-#### JSON формат
+#### JSON format
 ```json
 {
   "country": "Spain",
@@ -131,52 +131,52 @@ Media file not found: some-missing-file.jpg
 }
 ```
 
-#### Native формат
+#### Native format
 ```
 2/28/25, 18:50 - User Name: Message content
 3/4/25, 11:24 - User Name: document.pdf (file attached)
 [20.06.2025, 12:29:30] User Name: Message with EU date
 ```
 
-## 🛡️ Безопасность
+## 🛡️ Security
 
-- **Автоматические бэкапы**: Создаются перед любыми изменениями
-- **Проверка файлов**: Валидация структуры данных
-- **Graceful handling**: Пропуск поврежденных сообщений с предупреждениями
+- **Automatic backups**: Created before any changes
+- **File validation**: Data structure validation
+- **Graceful handling**: Skips corrupted messages with warnings
 
-## ⚠️ Ограничения
+## ⚠️ Limitations
 
-- Работает только с указанной структурой папок
-- Требует Node.js
-- Некоторые метаданные могут быть утеряны при конверсии
-- Генерируемые ID сообщений при конверсии синтетические
+- Works only with specified folder structure
+- Requires Node.js
+- Some metadata may be lost during conversion
+- Generated message IDs during conversion are synthetic
 
-## 🧪 Тестирование
+## 🧪 Testing
 
-Запустите тестовый скрипт для проверки функциональности:
+Run the test script to check functionality:
 
 ```bash
 node src/test-sync.js
 ```
 
-Тест создает образцы данных с различными форматами дат и демонстрирует полный цикл синхронизации.
+The test creates sample data with various date formats and demonstrates a full synchronization cycle.
 
-## 🔍 Диагностика
+## 🔍 Diagnostics
 
-### Проблемы с датами
+### Date Issues
 ```
 Could not parse date: 04.07.2025, 20:27:42
 ```
-**Решение**: Убедитесь, что формат даты соответствует поддерживаемым
+**Solution**: Ensure date format matches supported ones
 
-### Недостающие медиафайлы
+### Missing Media Files
 ```
 Media file not found: photo.jpg
 ```
-**Решение**: Проверьте, что файлы находятся в правильных папках (image/, document/, etc.)
+**Solution**: Check that files are in correct folders (image/, document/, etc.)
 
-### Ошибки парсинга
+### Parsing Errors
 ```
 Error during conversion: JSON file should contain an array
 ```
-**Решение**: Проверьте синтаксис JSON файла
+**Solution**: Check JSON file syntax

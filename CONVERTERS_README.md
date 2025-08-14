@@ -1,18 +1,18 @@
 # WhatsApp Converters
 
-Скрипты для конвертации между форматами WhatsApp:
-- `json-to-native-converter.js` - Конвертация JSON → Native формат
-- `native-to-json-converter.js` - Конвертация Native → JSON формат
+Scripts for converting between WhatsApp formats:
+- `json-to-native-converter.js` - Convert JSON → Native format
+- `native-to-json-converter.js` - Convert Native → JSON format
 
-## 🚀 Использование
+## 🚀 Usage
 
-### JSON в Native формат
+### JSON to Native format
 
 ```bash
 node src/json-to-native-converter.js input.json output.txt [attachments_directory]
 ```
 
-**Пример:**
+**Example:**
 ```bash
 node src/json-to-native-converter.js \
   data/input/2025/1234567890___Test-Chat/chats.json \
@@ -20,13 +20,13 @@ node src/json-to-native-converter.js \
   output/attachments/
 ```
 
-### Native в JSON формат
+### Native to JSON format
 
 ```bash
 node src/native-to-json-converter.js input.txt output.json [attachments_directory]
 ```
 
-**Пример:**
+**Example:**
 ```bash
 node src/native-to-json-converter.js \
   data/input/2025/1234567890___Test-Chat/native_backups/WhatsApp\ Chat\ with\ +12\ 345\ 67\ 89\ 0.txt \
@@ -34,9 +34,9 @@ node src/native-to-json-converter.js \
   output/attachments/
 ```
 
-## 📁 Форматы данных
+## 📁 Data Formats
 
-### JSON формат
+### JSON format
 ```json
 [
   {
@@ -61,36 +61,36 @@ node src/native-to-json-converter.js \
 ]
 ```
 
-### Native формат
+### Native format
 ```
 2/28/25, 18:50 - Test User: Hello world!
 2/28/25, 19:00 - Test User: photo.jpg (file attached)
 ```
 
-## 🎯 Особенности
+## 🎯 Features
 
-- **Автоматическое определение типов файлов** по расширению
-- **Поддержка вложений**: изображения, видео, документы, аудио
-- **Корректная обработка многострочных сообщений**
-- **Создание уникальных ID сообщений**
-- **Сохранение структуры директорий для медиафайлов**
+- **Automatic file type detection** by extension
+- **Attachment support**: images, videos, documents, audio
+- **Correct multi-line message handling**
+- **Unique message ID generation**
+- **Media file directory structure preservation**
 
-## 📊 Поддерживаемые типы сообщений
+## 📊 Supported Message Types
 
-- `chat` - Текстовые сообщения
-- `image` - Изображения (.jpg, .jpeg, .png, .gif, .webp)
-- `video` - Видео (.mp4, .avi, .mov, .mkv)
-- `audio` - Аудио (.mp3, .wav, .ogg, .m4a)
-- `document` - Документы (.pdf, .doc, .txt, и др.)
+- `chat` - Text messages
+- `image` - Images (.jpg, .jpeg, .png, .gif, .webp)
+- `video` - Videos (.mp4, .avi, .mov, .mkv)
+- `audio` - Audio (.mp3, .wav, .ogg, .m4a)
+- `document` - Documents (.pdf, .doc, .txt, etc.)
 
-## 🧪 Тестирование
+## 🧪 Testing
 
 ```bash
-# Запуск основных тестов
+# Run main tests
 node src/test-converters.js
 
-# Тест структуры директорий
+# Test directory structure
 node src/test-directory-structure.js
 ```
 
-Тесты создают тестовые данные и проверяют работу конвертеров в обоих направлениях.
+Tests create test data and verify converter operation in both directions.
