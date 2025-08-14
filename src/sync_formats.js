@@ -772,9 +772,11 @@ function convertToNativeDate(isoDate, originalFormat = "US") {
         .padStart(2, "0")}:${minutes}:${seconds}`;
 
     default:
-      // US format: M/D/YY, H:MM
+      // US format: M/D/YY, H:MM (with proper 24-hour format)
       const shortYear = year.toString().slice(-2);
-      return `${month}/${day}/${shortYear}, ${hours}:${minutes}`;
+      return `${month}/${day}/${shortYear}, ${hours
+        .toString()
+        .padStart(2, "0")}:${minutes}`;
   }
 }
 

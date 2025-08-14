@@ -17,7 +17,9 @@ function convertToNativeDate(isoDate) {
   const hours = date.getHours();
   const minutes = date.getMinutes().toString().padStart(2, "0");
 
-  return `${month}/${day}/${year}, ${hours}:${minutes}`;
+  return `${month}/${day}/${year}, ${hours
+    .toString()
+    .padStart(2, "0")}:${minutes}`;
 }
 
 // Function to get sender name from JSON message
