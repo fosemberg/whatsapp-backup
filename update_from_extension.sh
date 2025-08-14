@@ -66,7 +66,7 @@ echo "$zip_files" | while read -r zip_file; do
     target_dir=""
     while IFS= read -r dir; do
         # Skip media subdirectories
-        if [[ "$dir" == */image || "$dir" == */document || "$dir" == */sticker || "$dir" == */video || "$dir" == */useful ]]; then
+        if [[ "$dir" == */image || "$dir" == */document || "$dir" == */sticker || "$dir" == */video || "$dir" == */audio || "$dir" == */useful ]]; then
             continue
         fi
         
@@ -84,7 +84,7 @@ echo "$zip_files" | while read -r zip_file; do
     if [ -z "$target_dir" ]; then
         echo "Error: Could not find a matching directory in $DATA_INPUT_DIR for '$chat_name'"
         echo "Available directories:"
-        find "$DATA_INPUT_DIR" -type d -path "*/*___*" | grep -v "/image\|/document\|/sticker\|/video\|/useful" | sort
+        find "$DATA_INPUT_DIR" -type d -path "*/*___*" | grep -v "/image\|/document\|/sticker\|/video\|/audio\|/useful" | sort
         echo "Please create a directory for this chat or rename the zip file to match an existing directory."
         continue
     fi
@@ -130,7 +130,7 @@ EOF
     fi
     
     # Copy media files if they exist
-    for media_type in image document sticker video; do
+    for media_type in image document sticker video audio; do
         if [ -d "$chat_tmp_dir/$media_type" ]; then
             mkdir -p "$target_dir/$media_type"
             if [ "$DRY_RUN" = true ]; then

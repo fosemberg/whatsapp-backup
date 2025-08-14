@@ -107,8 +107,9 @@ pre {
       const MEDIA_TYPE = {
         IMAGE: 'image',
         VIDEO: 'video',
+        AUDIO: 'audio',
         DOCUMENT: 'document',
-        STICKER: 'sticker'
+        STICKER: 'sticker',
       };
       
       const isMediaMessage = Object.values(MEDIA_TYPE).includes(messageType);
@@ -121,6 +122,7 @@ pre {
             <pre>${cleanMessageBody}</pre>
             ${messageType === MEDIA_TYPE.IMAGE && html`<img class="message__img" src="${mediaLink}"/>`}
             ${messageType === MEDIA_TYPE.VIDEO && html`<video controls src="${mediaLink}"/>`}
+            ${messageType === MEDIA_TYPE.AUDIO && html`<audio controls src="${mediaLink}"/>`}
             ${messageType === MEDIA_TYPE.DOCUMENT && html`<a href="${mediaLink}">${messageBody}</a>`}
             ${messageType === MEDIA_TYPE.STICKER && html`<img class="message__img" src="${mediaLink}"/>`}
           </div>
