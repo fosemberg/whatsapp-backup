@@ -161,7 +161,7 @@ function parseNativeFile(filePath) {
         else if (phoneNum.startsWith("+7")) country = "Russia";
         else country = "Unknown";
       } else if (sender.startsWith("~")) {
-        // Display name format like "~Yanzhu"
+        // Display name format like "~Name"
         displayName = sender.substring(1);
         formattedName = displayName;
         country = "Unknown";
@@ -261,16 +261,217 @@ function parseJsonFile(filePath) {
   }));
 }
 
-// Generate message ID
+// Generate message ID without hardcoded sender detection
 function generateMessageId(sender, timestamp, isMultiLine = false) {
   const hash = Buffer.from(
     `${sender}_${timestamp}_${Math.random()}_${isMultiLine}`
   )
     .toString("hex")
     .substring(0, 16);
-  const prefix =
-    sender === "You" || sender.includes("Mikhail") ? "true" : "false";
+
+  // Smart detection: "You" or similar self-references indicate outgoing messages
+  const isOutgoing =
+    sender === "You" ||
+    sender === "SELF" ||
+    sender.toLowerCase().includes("you") ||
+    sender.toLowerCase() === "me";
+
+  const prefix = isOutgoing ? "true" : "false";
   return `${prefix}_sync@c.us_${hash.toUpperCase()}`;
+}
+
+// Cache for sender name mappings to avoid recalculation
+let senderNormalizationCache = new Map();
+
+// Analyze all messages to build sender mapping automatically
+function buildSenderMapping(jsonMessages, nativeMessages) {
+  const allMessages = [...jsonMessages, ...nativeMessages];
+  const senderStats = new Map();
+  const phonePatterns = /^\+?\d+[\s\d\-\(\)]*$/;
+
+  // Collect statistics about senders and their messages
+  allMessages.forEach((msg) => {
+    const sender = (msg.formattedName || "").trim();
+    const displayName = (msg.displayName || "").trim();
+    const body = (msg.messageBody || "").trim();
+
+    if (!senderStats.has(sender)) {
+      senderStats.set(sender, {
+        count: 0,
+        displayNames: new Set(),
+        isPhone: phonePatterns.test(sender),
+        isYou: sender === "You",
+        sampleMessages: [],
+        avgMessageLength: 0,
+      });
+    }
+
+    const stats = senderStats.get(sender);
+    stats.count++;
+    if (displayName) stats.displayNames.add(displayName);
+    if (stats.sampleMessages.length < 5) {
+      stats.sampleMessages.push(body.substring(0, 100));
+    }
+    stats.avgMessageLength = (stats.avgMessageLength + body.length) / 2;
+  });
+
+  // Find "You" equivalent in other format
+  const youStats = Array.from(senderStats.entries()).find(
+    ([sender, stats]) => stats.isYou
+  );
+  const phoneStats = Array.from(senderStats.entries()).filter(
+    ([sender, stats]) => stats.isPhone
+  );
+  const nameStats = Array.from(senderStats.entries()).filter(
+    ([sender, stats]) => !stats.isPhone && !stats.isYou
+  );
+
+  const mapping = new Map();
+
+  // Handle "You" mapping
+  if (youStats) {
+    mapping.set(youStats[0], "SELF");
+
+    // Try to find corresponding sender in other format
+    // Look for non-phone, non-You senders with similar message patterns
+    const youMessages = youStats[1].sampleMessages;
+    for (const [sender, stats] of nameStats) {
+      if (stats.count > 3) {
+        // Has enough messages to compare
+        const similarity = calculateMessageSimilarity(
+          youMessages,
+          stats.sampleMessages
+        );
+        if (similarity > 0.2) {
+          // If messages are similar, might be the same person
+          mapping.set(sender, "SELF");
+          break;
+        }
+      }
+    }
+  }
+
+  // Handle phone number normalization
+  phoneStats.forEach(([sender, stats]) => {
+    // Normalize phone format: remove spaces, keep only digits and +
+    const normalizedPhone = sender.replace(/[\s\-\(\)]/g, "");
+    mapping.set(sender, normalizedPhone);
+  });
+
+  // Handle display names
+  nameStats.forEach(([sender, stats]) => {
+    if (mapping.has(sender)) return; // Already mapped
+
+    // Prefer display name if available
+    if (stats.displayNames.size > 0) {
+      const mostCommonDisplayName = Array.from(stats.displayNames)[0];
+      mapping.set(sender, mostCommonDisplayName);
+    } else {
+      // Try to extract shorter name from long formatted names
+      const shortName = extractShortName(sender);
+      mapping.set(sender, shortName);
+    }
+  });
+
+  return mapping;
+}
+
+// Calculate similarity between message sets
+function calculateMessageSimilarity(messages1, messages2) {
+  if (!messages1.length || !messages2.length) return 0;
+
+  const words1 = new Set(messages1.join(" ").toLowerCase().split(/\s+/));
+  const words2 = new Set(messages2.join(" ").toLowerCase().split(/\s+/));
+
+  const intersection = new Set([...words1].filter((word) => words2.has(word)));
+  const union = new Set([...words1, ...words2]);
+
+  return intersection.size / union.size;
+}
+
+// Extract shorter name from long formatted names
+function extractShortName(fullName) {
+  // Remove common patterns that make names long
+  let name = fullName;
+
+  // Remove email-like patterns
+  name = name.replace(/[@.]\w+/g, "");
+
+  // Remove common suffixes/prefixes
+  name = name.replace(
+    /\b(mock|interview|eng|frontend|backend|chat|with)\b/gi,
+    ""
+  );
+
+  // Take first meaningful word (longer than 2 chars)
+  const words = name.split(/\s+/).filter((word) => word.length > 2);
+  if (words.length > 0) {
+    return words[0];
+  }
+
+  // If no good word found, return original but truncated
+  return fullName.length > 20 ? fullName.substring(0, 20) + "..." : fullName;
+}
+
+// Smart sender name normalization without hardcoded values
+function normalizeSenderName(msg, senderMapping = null) {
+  const sender = (msg.formattedName || "").trim();
+
+  // Use cached mapping if available
+  if (senderMapping && senderMapping.has(sender)) {
+    return senderMapping.get(sender);
+  }
+
+  // Fallback: basic normalization without hardcoded names
+  if (sender === "You") {
+    return "SELF";
+  }
+
+  // Basic phone normalization
+  if (/^\+?\d+[\s\d\-\(\)]*$/.test(sender)) {
+    return sender.replace(/[\s\-\(\)]/g, "");
+  }
+
+  // Use display name if available
+  if (msg.displayName && msg.displayName.trim() !== "") {
+    return msg.displayName.trim();
+  }
+
+  // Extract short name from long names
+  return extractShortName(sender);
+}
+
+// Create a stable hash for message content to ensure proper deduplication
+function createMessageHash(msg, senderMapping = null) {
+  // Normalize message content for consistent hashing
+  const normalizedBody = (msg.messageBody || "").trim();
+  const normalizedSender = normalizeSenderName(msg, senderMapping);
+  const normalizedType = msg.messageType || "chat";
+
+  // Create content-based hash WITHOUT timestamp for better deduplication
+  const content = `${normalizedSender}:${normalizedType}:${normalizedBody}`;
+
+  // Simple hash function
+  let hash = 0;
+  for (let i = 0; i < content.length; i++) {
+    const char = content.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+
+  return hash.toString();
+}
+
+// Create a time-aware hash for messages (includes rounded timestamp)
+function createTimeAwareHash(msg, senderMapping = null) {
+  const normalizedBody = (msg.messageBody || "").trim();
+  const normalizedSender = normalizeSenderName(msg, senderMapping);
+  const normalizedType = msg.messageType || "chat";
+
+  // Round timestamp to nearest 5 minutes for time tolerance
+  const roundedTimestamp = Math.floor(msg.timestamp / 300000) * 300000;
+
+  return `${normalizedSender}:${normalizedType}:${normalizedBody}:${roundedTimestamp}`;
 }
 
 // Merge messages from both sources, removing duplicates and maintaining chronological order
@@ -279,45 +480,63 @@ function mergeMessages(jsonMessages, nativeMessages) {
     `Merging ${jsonMessages.length} JSON messages with ${nativeMessages.length} native messages...`
   );
 
-  // Create a map for deduplication based on content and timestamp proximity
-  const messageMap = new Map();
-  const TIMESTAMP_TOLERANCE = 60000; // 1 minute tolerance for matching
+  // Build intelligent sender mapping based on message analysis
+  console.log("🔍 Analyzing sender patterns for smart deduplication...");
+  const senderMapping = buildSenderMapping(jsonMessages, nativeMessages);
 
-  // Add all messages to the map
-  const allMessages = [...jsonMessages, ...nativeMessages];
-
-  for (const msg of allMessages) {
-    // Create a key for deduplication
-    const contentKey = `${msg.messageBody}_${msg.messageType}_${msg.formattedName}`;
-
-    // Check if we already have a similar message within time tolerance
-    let isDuplicate = false;
-    for (const [existingKey, existingMsg] of messageMap) {
-      if (
-        existingKey.startsWith(contentKey.substring(0, 50)) &&
-        Math.abs(existingMsg.timestamp - msg.timestamp) < TIMESTAMP_TOLERANCE
-      ) {
-        // Keep the JSON version if available (it has more metadata)
-        if (msg.source === "json" && existingMsg.source === "native") {
-          messageMap.set(existingKey, msg);
-        }
-        isDuplicate = true;
-        break;
-      }
-    }
-
-    if (!isDuplicate) {
-      const uniqueKey = `${contentKey}_${msg.timestamp}`;
-      messageMap.set(uniqueKey, msg);
-    }
+  console.log(`📋 Detected ${senderMapping.size} sender mappings:`);
+  Array.from(senderMapping.entries())
+    .slice(0, 5)
+    .forEach(([original, normalized]) => {
+      console.log(`   "${original}" → "${normalized}"`);
+    });
+  if (senderMapping.size > 5) {
+    console.log(`   ... and ${senderMapping.size - 5} more`);
   }
 
-  // Convert back to array and sort chronologically
-  const mergedMessages = Array.from(messageMap.values()).sort(
+  const seenContentHashes = new Set();
+  const seenTimeAwareHashes = new Set();
+  const mergedMessages = [];
+
+  // Combine all messages and sort by timestamp
+  const allMessages = [...jsonMessages, ...nativeMessages].sort(
     (a, b) => a.timestamp - b.timestamp
   );
 
-  console.log(`Merged result: ${mergedMessages.length} unique messages`);
+  let duplicatesRemoved = 0;
+
+  for (const msg of allMessages) {
+    // Create different types of hashes for comprehensive deduplication
+    const contentHash = createMessageHash(msg, senderMapping);
+    const timeAwareHash = createTimeAwareHash(msg, senderMapping);
+
+    // Check for content-based duplicates (same content, sender, type)
+    if (seenContentHashes.has(contentHash)) {
+      console.log(
+        `Skipping content duplicate: ${msg.messageBody?.substring(0, 30)}...`
+      );
+      duplicatesRemoved++;
+      continue;
+    }
+
+    // Check for time-aware duplicates (same content + time window)
+    if (seenTimeAwareHashes.has(timeAwareHash)) {
+      console.log(
+        `Skipping time-aware duplicate: ${msg.messageBody?.substring(0, 30)}...`
+      );
+      duplicatesRemoved++;
+      continue;
+    }
+
+    // Add message if it's unique
+    seenContentHashes.add(contentHash);
+    seenTimeAwareHashes.add(timeAwareHash);
+    mergedMessages.push(msg);
+  }
+
+  console.log(
+    `Merged result: ${mergedMessages.length} unique messages (removed ${duplicatesRemoved} duplicates)`
+  );
   return mergedMessages;
 }
 
