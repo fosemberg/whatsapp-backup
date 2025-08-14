@@ -1,125 +1,96 @@
-# WhatsApp Format Converters
+# WhatsApp Converters
 
-This project includes two converters to transform WhatsApp backup data between different formats:
+Скрипты для конвертации между форматами WhatsApp:
+- `json-to-native-converter.js` - Конвертация JSON → Native формат
+- `native-to-json-converter.js` - Конвертация Native → JSON формат
 
-1. **JSON to Native Format Converter** (`src/json-to-native-converter.js`)
-2. **Native to JSON Format Converter** (`src/native-to-json-converter.js`)
+## 🚀 Использование
 
-## Formats Supported
-
-### Format 1: JSON Format (`chats.json`)
-- Structured JSON array of message objects
-- Each message contains:
-  - `country`: Sender's country
-  - `phoneNum`: Phone number (including country code)
-  - `formattedName`: Display name
-  - `displayName`: Optional display name
-  - `messageTime`: ISO timestamp (e.g., "2025-02-28 18:50:57")
-  - `messageType`: Type of message ("chat", "image", "video", "audio", "document", "pdf")
-  - `messageBody`: Message content or filename for attachments
-  - `messageId`: Unique message identifier
-
-### Format 2: Native WhatsApp Text Format
-- Plain text format similar to WhatsApp's native export
-- Date format: `MM/DD/YY, HH:MM` or `[DD.MM.YYYY, HH:MM:SS]`
-- Message format: `DATE - SENDER: MESSAGE`
-- Attachments: `FILENAME (file attached)`
-- Multi-line messages continue on subsequent lines
-- System messages (encryption notices, etc.)
-
-## Usage
-
-### JSON to Native Converter
+### JSON в Native формат
 
 ```bash
-node src/json-to-native-converter.js <input.json> <output.txt> [attachments_dir]
+node src/json-to-native-converter.js input.json output.txt [attachments_directory]
 ```
 
-**Parameters:**
-- `input.json`: Path to the input JSON file
-- `output.txt`: Path for the output native WhatsApp text file
-- `attachments_dir`: Optional directory to copy media files to
-
-**Example:**
+**Пример:**
 ```bash
-node src/json-to-native-converter.js data/input/2025/1234567890___Test-Chat/chats.json output/chat.txt output/attachments/
+node src/json-to-native-converter.js \
+  data/input/2025/1234567890___Test-Chat/chats.json \
+  output/chat.txt \
+  output/attachments/
 ```
 
-### Native to JSON Converter
+### Native в JSON формат
 
 ```bash
-node src/native-to-json-converter.js <input.txt> <output.json> [attachments_dir]
+node src/native-to-json-converter.js input.txt output.json [attachments_directory]
 ```
 
-**Parameters:**
-- `input.txt`: Path to the input native WhatsApp text file
-- `output.json`: Path for the output JSON file
-- `attachments_dir`: Optional directory to copy media files from
-
-**Example:**
+**Пример:**
 ```bash
-node src/native-to-json-converter.js data/input/2025/1234567890___Test-Chat/backup.txt output/chats.json data/attachments/
+node src/native-to-json-converter.js \
+  data/input/2025/1234567890___Test-Chat/native_backups/WhatsApp\ Chat\ with\ +12\ 345\ 67\ 89\ 0.txt \
+  output/chat.json \
+  output/attachments/
 ```
 
-## Features
+## 📁 Форматы данных
 
-### Media File Handling
-- Automatically detects and handles various file types:
-  - Images: `.jpg`, `.jpeg`, `.png`, `.gif`, `.webp`
-  - Videos: `.mp4`, `.avi`, `.mov`, `.mkv`
-  - Audio: `.mp3`, `.wav`, `.ogg`, `.m4a`
-  - Documents: `.pdf`, `.doc`, `.docx`, `.txt`, `.xlsx`, `.ppt`
-- Copies media files between source and destination directories
-- Preserves original filenames and extensions
+### JSON формат
+```json
+[
+  {
+    "country": "Test Country",
+    "phoneNum": "+1234567890",
+    "formattedName": "Test User",
+    "displayName": "Test Display Name",
+    "messageTime": "2025-02-28 18:50:57",
+    "messageType": "chat",
+    "messageBody": "Hello world!",
+    "messageId": "false_1234567890@c.us_3AE89C28F3DDBCB49792"
+  },
+  {
+    "country": "Test Country",
+    "phoneNum": "+1234567890", 
+    "formattedName": "Test User",
+    "messageTime": "2025-02-28 19:00:00",
+    "messageType": "image",
+    "messageBody": "photo.jpg",
+    "messageId": "false_1234567890@c.us_3BB4C39DA8E53A0B1EFD"
+  }
+]
+```
 
-### Date Format Support
-- Handles multiple date formats:
-  - `3/4/25, 0:50` (MM/DD/YY, H:MM)
-  - `[20.06.2025, 12:29:30]` (DD.MM.YYYY, HH:MM:SS)
-- Converts between ISO format and native WhatsApp formats
+### Native формат
+```
+2/28/25, 18:50 - Test User: Hello world!
+2/28/25, 19:00 - Test User: photo.jpg (file attached)
+```
 
-### Message Types
-- Regular text messages
-- Multi-line messages
-- Image/video/audio/document attachments
-- Special image references (`【IMAGE】`)
-- System messages (filtered out during conversion)
+## 🎯 Особенности
 
-### Sender Identification
-- Handles phone numbers with country codes
-- Distinguishes between incoming and outgoing messages
-- Preserves display names and formatted names
-- Basic country detection from phone numbers
+- **Автоматическое определение типов файлов** по расширению
+- **Поддержка вложений**: изображения, видео, документы, аудио
+- **Корректная обработка многострочных сообщений**
+- **Создание уникальных ID сообщений**
+- **Сохранение структуры директорий для медиафайлов**
 
-## Testing
+## 📊 Поддерживаемые типы сообщений
 
-Run the test script to verify both converters:
+- `chat` - Текстовые сообщения
+- `image` - Изображения (.jpg, .jpeg, .png, .gif, .webp)
+- `video` - Видео (.mp4, .avi, .mov, .mkv)
+- `audio` - Аудио (.mp3, .wav, .ogg, .m4a)
+- `document` - Документы (.pdf, .doc, .txt, и др.)
+
+## 🧪 Тестирование
 
 ```bash
+# Запуск основных тестов
 node src/test-converters.js
+
+# Тест структуры директорий
+node src/test-directory-structure.js
 ```
 
-This will:
-1. Test JSON to Native conversion
-2. Test Native to JSON conversion
-3. Handle media file copying
-4. Create output in `test-output/` directory
-
-## Error Handling
-
-- Validates input file formats
-- Handles missing media files gracefully
-- Provides detailed error messages
-- Warns about parsing issues without stopping conversion
-
-## Limitations
-
-- Country detection is basic and may not cover all country codes
-- Some message metadata may be lost during conversion
-- Deleted messages and edited message markers are handled but may not be perfectly preserved
-- Generated message IDs in Native→JSON conversion are synthetic
-
-## Dependencies
-
-- Node.js (built-in modules only: `fs`, `path`)
-- No external dependencies required
+Тесты создают тестовые данные и проверяют работу конвертеров в обоих направлениях.
