@@ -328,26 +328,59 @@ function buildSenderMapping(jsonMessages, nativeMessages) {
 
   const mapping = new Map();
 
-  // Handle "You" mapping
+  // Handle "You" mapping - smart pairing between formats
   if (youStats) {
     mapping.set(youStats[0], "SELF");
 
-    // Try to find corresponding sender in other format
-    // Look for non-phone, non-You senders with similar message patterns
+    // Strategy 1: Content matching - find who sends same messages as "You"
     const youMessages = youStats[1].sampleMessages;
+    let bestMatch = null;
+    let bestScore = 0;
+
     for (const [sender, stats] of nameStats) {
-      if (stats.count > 3) {
-        // Has enough messages to compare
-        const similarity = calculateMessageSimilarity(
-          youMessages,
-          stats.sampleMessages
-        );
-        if (similarity > 0.2) {
-          // If messages are similar, might be the same person
-          mapping.set(sender, "SELF");
-          break;
+      if (stats.isPhone || stats.isYou) continue;
+
+      // Check if any of their messages match "You" messages
+      const matchScore = stats.sampleMessages.filter((msg) =>
+        youMessages.some(
+          (youMsg) =>
+            youMsg.length > 5 &&
+            msg.length > 5 &&
+            (youMsg.includes(msg.substring(0, 20)) ||
+              msg.includes(youMsg.substring(0, 20)))
+        )
+      ).length;
+
+      if (matchScore > bestScore) {
+        bestMatch = [sender, stats];
+        bestScore = matchScore;
+      }
+    }
+
+    // Strategy 2: If no content match, use activity pattern
+    if (!bestMatch || bestScore === 0) {
+      const totalMessages = allMessages.length;
+      const youMessageCount = youStats[1].count;
+
+      // Find most active non-phone sender if "You" is also active
+      if (youMessageCount / totalMessages > 0.15) {
+        const candidate = nameStats
+          .filter(([sender, stats]) => !stats.isPhone && !stats.isYou)
+          .sort(([, a], [, b]) => b.count - a.count)[0];
+
+        if (candidate && candidate[1].count >= 1) {
+          bestMatch = candidate;
+          bestScore = -1; // Indicate activity-based match
         }
       }
+    }
+
+    if (bestMatch) {
+      const matchType = bestScore > 0 ? "content" : "activity";
+      console.log(
+        `🔗 Mapping "${bestMatch[0]}" to SELF via ${matchType} analysis (${bestMatch[1].count} messages)`
+      );
+      mapping.set(bestMatch[0], "SELF");
     }
   }
 
