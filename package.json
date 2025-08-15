@@ -5,11 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha",
-    "test:legacy": "echo '🧪 Running all tests (legacy)...' && for file in tests/test-*.js; do echo \"\\n📋 Running $(basename \"$file\")...\"; node \"$file\" || exit 1; done && echo '\\n✅ All tests completed successfully!' && npm run clean-test-backups",
     "test:debug": "echo '🔧 Running debug tools...' && for file in tests/analyze-*.js tests/debug-*.js tests/find-*.js; do [ -f \"$file\" ] && echo \"\\n📋 Running $(basename \"$file\")...\" && node \"$file\"; done",
-    "test:converters": "node tests/test-converters.js && npm run clean-test-backups",
-    "test:sync": "node tests/test-sync.js && npm run clean-test-backups",
-    "test:dedup": "node tests/test-deduplication.js && npm run clean-test-backups",
     "test:spec": "mocha --reporter spec",
     "test:json": "mocha --reporter json",
     "test:dot": "mocha --reporter dot",
