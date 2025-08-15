@@ -82,6 +82,69 @@ body {
 
 .message__img {
   max-width: 100%;
+  max-height: 300px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: opacity 0.2s ease;
+}
+
+.message__img:hover {
+  opacity: 0.8;
+}
+
+/* Fullscreen modal styles */
+.fullscreen-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.fullscreen-modal.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.fullscreen-modal img {
+  max-width: 95vw;
+  max-height: 95vh;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.fullscreen-close {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  font-size: 40px;
+  color: white;
+  cursor: pointer;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: background 0.2s ease;
+  user-select: none;
+}
+
+.fullscreen-close:hover {
+  background: rgba(0, 0, 0, 0.8);
 }
 
 pre {
@@ -130,6 +193,57 @@ pre {
 
   console.log('myPhone', myPhone)
   console.log('myIdentifiers', myIdentifiers)
+  
+  // Fullscreen modal functionality
+  let fullscreenModal = null;
+  
+  const createFullscreenModal = () => {
+    if (fullscreenModal) return fullscreenModal;
+    
+    const modal = document.createElement('div');
+    modal.className = 'fullscreen-modal';
+    modal.innerHTML = `
+      <div class="fullscreen-close">×</div>
+      <img src="" alt="Fullscreen image">
+    `;
+    document.body.appendChild(modal);
+    
+    // Close modal handlers
+    const closeBtn = modal.querySelector('.fullscreen-close');
+    const img = modal.querySelector('img');
+    
+    closeBtn.addEventListener('click', closeFullscreen);
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeFullscreen();
+    });
+    
+    return modal;
+  };
+  
+  const openFullscreen = (imageSrc) => {
+    if (!fullscreenModal) {
+      fullscreenModal = createFullscreenModal();
+    }
+    
+    const img = fullscreenModal.querySelector('img');
+    img.src = imageSrc;
+    fullscreenModal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  };
+  
+  const closeFullscreen = () => {
+    if (fullscreenModal) {
+      fullscreenModal.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+  };
+  
+  // Esc key handler
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && fullscreenModal && fullscreenModal.classList.contains('active')) {
+      closeFullscreen();
+    }
+  });
   
   // Smart function to check if message is mine
   const isMyMessage = (chat) => {
@@ -237,11 +351,11 @@ pre {
         html`<div class="message message_${isMyMessage(item) ? 'my' : 'not-my'}">
           <div class="message__body">
             <pre>${cleanMessageBody}</pre>
-            ${messageType === MEDIA_TYPE.IMAGE && html`<img class="message__img" src="${mediaLink}"/>`}
+            ${messageType === MEDIA_TYPE.IMAGE && html`<img class="message__img" src="${mediaLink}" onClick=${() => openFullscreen(mediaLink)}/>`}
             ${messageType === MEDIA_TYPE.VIDEO && html`<video controls src="${mediaLink}"/>`}
             ${messageType === MEDIA_TYPE.AUDIO && html`<audio controls src="${mediaLink}"/>`}
             ${messageType === MEDIA_TYPE.DOCUMENT && html`<a href="${mediaLink}">${messageBody}</a>`}
-            ${messageType === MEDIA_TYPE.STICKER && html`<img class="message__img" src="${mediaLink}"/>`}
+            ${messageType === MEDIA_TYPE.STICKER && html`<img class="message__img" src="${mediaLink}" onClick=${() => openFullscreen(mediaLink)}/>`}
             <div class="message-time">${formattedTime}</div>
           </div>
         </div>`
