@@ -191,7 +191,7 @@ function analyzeChat(chatDirectory) {
   console.log("\n💡 INSTRUCTIONS:");
   console.log("1. Copy the template above");
   console.log("2. Remove lines that DON'T belong to you");
-  console.log("3. Save to src/public/config.json");
+  console.log("3. Save to config.json (project root)");
   console.log("4. Test with: node src/sync_formats.js <your_chat_directory>");
 
   console.log("\n🎯 QUICK COPY-PASTE TEMPLATE:");
@@ -252,7 +252,7 @@ if (require.main === module) {
     console.log("Next steps:");
     console.log("  1. Run this script on your chat directory");
     console.log("  2. Identify which identifiers belong to you");
-    console.log("  3. Create/update src/public/config.json");
+    console.log("  3. Create/update config.json (project root)");
     console.log("  4. Test with sync_formats.js");
     process.exit(args.length === 0 ? 1 : 0);
   }

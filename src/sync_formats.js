@@ -15,9 +15,9 @@ let configCache = null;
 function loadConfig(customConfigPath = null) {
   if (!configCache) {
     try {
-      // Use custom config path if provided (for tests), otherwise use main config
+      // Use custom config path if provided (for tests), otherwise use main config in project root
       const configPath =
-        customConfigPath || path.join(__dirname, "public", "config.json");
+        customConfigPath || path.join(__dirname, "..", "config.json");
       const configData = fs.readFileSync(configPath, "utf8");
       configCache = JSON.parse(configData);
       console.log(

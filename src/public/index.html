@@ -163,7 +163,7 @@ pre {
       const config = await configResponse.json();
       return config;
     } else {
-      console.error('Config file not found! Please create src/public/config.json');
+      console.error('Config file not found! Please create config.json in project root');
       return {
         myIdentifiers: ["You"]
       };

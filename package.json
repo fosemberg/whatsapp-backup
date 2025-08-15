@@ -17,7 +17,8 @@
     "clear-output": "npm run clear-web && npm run clear-pdf",
     "cp-data-to-web": "cp -r data/input/* data/output/web/",
     "cp-public-to-web-folders": "find data/output/web -mindepth 2 -type d | xargs -I {} cp src/public/* {}",
-    "build-web": "npm run prepare-output && npm run clear-web && npm run cp-data-to-web && npm run cp-public-to-web-folders",
+    "cp-config-to-web-folders": "find data/output/web -mindepth 2 -type d | xargs -I {} cp config.json {}",
+    "build-web": "npm run prepare-output && npm run clear-web && npm run cp-data-to-web && npm run cp-public-to-web-folders && npm run cp-config-to-web-folders",
     "serve-web": "http-server data/output/web",
     "start": "npm run build-web && npm run serve-web",
     "build-pdfs": "cd src && node make-pdfs.js"

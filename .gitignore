@@ -3,6 +3,6 @@ node_modules
 data/*
 !data/input.example
 !data/output.example
-src/public/config.json
+config.json
 .npmrc
 test-output
