@@ -1,49 +1,58 @@
 [
   {
-    "country": "Test Country",
-    "phoneNum": "+1555123456",
+    "phoneNum": "+15551234567890",
     "formattedName": "You",
+    "displayName": "You",
     "messageTime": "2025-01-01 12:00:00",
     "messageType": "chat",
     "messageBody": "Hello from JSON!",
-    "messageId": "msg_001"
+    "messageId": "json1"
   },
   {
-    "country": "Test Country",
     "phoneNum": "+1555987654",
     "formattedName": "Alice Johnson Professional Chat",
     "displayName": "Alice",
-    "messageTime": "2025-01-01 12:05:00",
+    "messageTime": "2025-01-01 12:01:00",
     "messageType": "chat",
     "messageBody": "Hi there!",
-    "messageId": "msg_002"
+    "messageId": "json2"
   },
   {
     "country": "Unknown",
     "phoneNum": "+1555987654",
-    "formattedName": "+1555987654",
-    "messageTime": "2025-01-01 12:07:00",
+    "formattedName": "Alice",
+    "displayName": "Alice",
+    "messageTime": "2025-01-01 12:01:00",
     "messageType": "chat",
-    "messageBody": "New message only in native",
-    "messageId": "false_sync@c.us_2B31353535393837"
+    "messageBody": "Hi there!",
+    "messageId": "false_sync@c.us_416C6963655F3230"
   },
   {
-    "country": "Test Country",
-    "phoneNum": "+1555555555",
-    "formattedName": "Bob Smith Engineering Team Lead",
-    "displayName": "Bob",
-    "messageTime": "2025-01-01 12:10:00",
+    "phoneNum": "+1555987654",
+    "formattedName": "Alice",
+    "displayName": "Alice",
+    "messageTime": "2025-01-01 12:02:00",
     "messageType": "image",
     "messageBody": "photo.jpg",
-    "messageId": "msg_003"
+    "messageId": "json3"
+  },
+  {
+    "country": "Unknown",
+    "phoneNum": null,
+    "formattedName": "Bob Smith Engineering Team Lead",
+    "displayName": "Bob Smith Engineering Team Lead",
+    "messageTime": "2025-01-01 12:03:00",
+    "messageType": "chat",
+    "messageBody": "Unique message from Bob",
+    "messageId": "false_sync@c.us_426F6220536D6974"
   },
   {
     "country": "Unknown",
     "phoneNum": "+15551234567890",
     "formattedName": "+15551234567890",
-    "messageTime": "2025-01-01 12:15:00",
+    "messageTime": "2025-01-01 12:04:00",
     "messageType": "chat",
-    "messageBody": "Another message from phone format",
+    "messageBody": "Another message from main user",
     "messageId": "false_sync@c.us_2B31353535313233"
   }
 ]

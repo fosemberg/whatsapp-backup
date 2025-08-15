@@ -3,45 +3,48 @@
     "country": "Test Country",
     "phoneNum": "+1234567890",
     "formattedName": "User A",
+    "displayName": "User A",
     "messageTime": "2025-01-01 12:00:00",
     "messageType": "chat",
     "messageBody": "First message",
-    "messageId": "msg_001"
+    "messageId": "json1"
   },
   {
     "country": "Test Country",
     "phoneNum": "+1234567890",
     "formattedName": "User B",
-    "messageTime": "2025-01-01 12:05:00",
+    "displayName": "User B",
+    "messageTime": "2025-01-01 12:01:00",
     "messageType": "chat",
     "messageBody": "Second message",
-    "messageId": "msg_002"
-  },
-  {
-    "country": "Unknown",
-    "phoneNum": null,
-    "formattedName": "User C",
-    "displayName": "User C",
-    "messageTime": "2025-01-01 12:07:00",
-    "messageType": "chat",
-    "messageBody": "Third message (only in native)",
-    "messageId": "false_sync@c.us_5573657220435F32"
+    "messageId": "json2"
   },
   {
     "country": "Test Country",
     "phoneNum": "+1234567890",
-    "formattedName": "User A",
-    "messageTime": "2025-01-01 12:10:00",
+    "formattedName": "User C",
+    "displayName": "User C",
+    "messageTime": "2025-01-01 12:02:00",
     "messageType": "image",
     "messageBody": "photo.jpg",
-    "messageId": "msg_003"
+    "messageId": "json3"
+  },
+  {
+    "country": "Unknown",
+    "phoneNum": "+1234567890",
+    "formattedName": "User A",
+    "displayName": "User A",
+    "messageTime": "2025-01-01 12:03:00",
+    "messageType": "chat",
+    "messageBody": "Third message (only in native)",
+    "messageId": "false_sync@c.us_5573657220415F32"
   },
   {
     "country": "Unknown",
     "phoneNum": "+1234567890",
     "formattedName": "User B",
     "displayName": "User B",
-    "messageTime": "2025-01-01 12:15:00",
+    "messageTime": "2025-01-01 12:04:00",
     "messageType": "chat",
     "messageBody": "Fourth message (only in native)",
     "messageId": "false_sync@c.us_5573657220425F32"

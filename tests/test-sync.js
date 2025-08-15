@@ -1,143 +1,188 @@
-#!/usr/bin/env node
-
-/**
- * Test script for sync_formats.js
- * Creates test data and demonstrates synchronization
- */
-
+const { expect } = require("chai");
 const fs = require("fs");
 const path = require("path");
 const { syncFormats } = require("../src/sync_formats");
 
-function createTestData() {
-  console.log("=== Creating Test WhatsApp Data ===\n");
-
+describe("WhatsApp Sync Formats", function () {
   const testDir = "tests/data/test-sync";
-  const inputDir = testDir;
 
-  // Create test directory
-  if (fs.existsSync(testDir)) {
-    fs.rmSync(testDir, { recursive: true });
-  }
-  fs.mkdirSync(testDir, { recursive: true });
+  function createTestData() {
+    // Create test directory
+    if (fs.existsSync(testDir)) {
+      fs.rmSync(testDir, { recursive: true });
+    }
+    fs.mkdirSync(testDir, { recursive: true });
 
-  // Create media directories
-  const mediaTypes = ["image", "document", "video", "audio"];
-  mediaTypes.forEach((type) => {
-    const dir = path.join(inputDir, type);
-    fs.mkdirSync(dir, { recursive: true });
+    // Create media directories
+    const mediaTypes = ["image", "document", "video", "audio"];
+    mediaTypes.forEach((type) => {
+      fs.mkdirSync(path.join(testDir, type), { recursive: true });
+    });
 
-    // Create sample files
+    // Create native_backups directory
+    const nativeBackupsDir = path.join(testDir, "native_backups");
+    fs.mkdirSync(nativeBackupsDir, { recursive: true });
+
+    // Create test JSON file
+    const jsonData = [
+      {
+        messageId: "test1",
+        messageTime: "2025-01-01 12:00:00",
+        messageType: "chat",
+        messageBody: "Hello from JSON!",
+        formattedName: "Test User",
+        phoneNum: "+1234567890",
+        displayName: "Test User",
+      },
+      {
+        messageId: "test2",
+        messageTime: "2025-01-01 12:03:00",
+        messageType: "image",
+        messageBody: "sample.jpg",
+        formattedName: "Test User",
+        phoneNum: "+1234567890",
+        displayName: "Test User",
+      },
+    ];
+
     fs.writeFileSync(
-      path.join(dir, `sample.${type === "image" ? "jpg" : "mp4"}`),
-      `Sample ${type} content`
+      path.join(testDir, "chats.json"),
+      JSON.stringify(jsonData, null, 2)
     );
+
+    // Create test native file with mixed date formats
+    const nativeContent = `1/1/25, 12:01 - Test User: Hello from Native!
+1/1/25, 12:02 - Test User: Another message from native
+1/1/25, 12:04 - Test User: document.pdf (file attached)
+[01.01.2025, 12:05:30] Test User: EU format message
+01.01.2025, 12:06:15 Test User: EU no brackets message
+1/1/25, 12:07 - Test User: Final message`;
+
+    fs.writeFileSync(
+      path.join(nativeBackupsDir, "WhatsApp Chat with +12 345 67 89 0.txt"),
+      nativeContent
+    );
+
+    // Create a sample image file
+    fs.writeFileSync(
+      path.join(testDir, "image", "sample.jpg"),
+      "fake image data"
+    );
+
+    return {
+      jsonMessages: jsonData.length,
+      nativeLines: nativeContent.split("\n").length,
+    };
+  }
+
+  before(function () {
+    this.testStats = createTestData();
+    console.log(`    ✅ Test data created in: ${testDir}/`);
+    console.log(`    📄 JSON messages: ${this.testStats.jsonMessages}`);
+    console.log(`    📄 Native file created with multiple date formats`);
+    console.log(`    📁 Media directories: image, document, video, audio`);
   });
 
-  // Create JSON data with some messages
-  const jsonData = [
-    {
-      country: "Test Country",
-      phoneNum: "+1234567890",
-      formattedName: "Test User",
-      messageTime: "2025-01-01 12:00:00",
-      messageType: "chat",
-      messageBody: "Hello from JSON!",
-      messageId: "json_001",
-    },
-    {
-      country: "Test Country",
-      phoneNum: "+1234567890",
-      formattedName: "Test User",
-      messageTime: "2025-01-01 12:05:00",
-      messageType: "image",
-      messageBody: "sample.jpg",
-      messageId: "json_002",
-    },
-  ];
-
-  fs.writeFileSync(
-    path.join(inputDir, "chats.json"),
-    JSON.stringify(jsonData, null, 2)
-  );
-
-  // Create native backup directory and file
-  const nativeDir = path.join(inputDir, "native_backups");
-  fs.mkdirSync(nativeDir, { recursive: true });
-
-  const nativeContent = `1/1/25, 12:00 - Messages and calls are end-to-end encrypted. Only people in this chat can read, listen to, or share them. Learn more.
-1/1/25, 12:00 - 
-1/1/25, 12:00 - Test User: Hello from JSON!
-1/1/25, 12:02 - Test User: Hello from Native!
-[01.01.2025, 12:07:30] Test User: Hello with EU brackets format!
-01.01.2025, 12:10:15 Test User: Hello with EU no-brackets format!
-1/1/25, 12:05 - Test User: sample.jpg (file attached)
-1/1/25, 12:08 - Test User: document.pdf (file attached)`;
-
-  fs.writeFileSync(
-    path.join(nativeDir, "WhatsApp Chat with +12 345 67 89 0.txt"),
-    nativeContent
-  );
-
-  console.log(`✅ Test data created in: ${testDir}/`);
-  console.log(`📄 JSON messages: ${jsonData.length}`);
-  console.log(`📄 Native file created with multiple date formats`);
-  console.log(`📁 Media directories: ${mediaTypes.join(", ")}\n`);
-
-  return testDir;
-}
-
-function testSync() {
-  const testDir = createTestData();
-
-  console.log("=== Testing Synchronization ===\n");
-
-  // Show initial state
-  console.log("📊 Initial state:");
-  const jsonPath = path.join(testDir, "chats.json");
-  const nativePath = path.join(
-    testDir,
-    "native_backups",
-    "WhatsApp Chat with +12 345 67 89 0.txt"
-  );
-
-  const initialJson = JSON.parse(fs.readFileSync(jsonPath, "utf8"));
-  const initialNative = fs
-    .readFileSync(nativePath, "utf8")
-    .split("\n")
-    .filter((line) => line.trim() && !line.includes("encrypted"));
-
-  console.log(`   JSON: ${initialJson.length} messages`);
-  console.log(`   Native: ${initialNative.length} lines\n`);
-
-  // Run synchronization
-  try {
-    syncFormats(testDir);
-
-    // Show final state
-    console.log("\n📊 Final state:");
-    const finalJson = JSON.parse(fs.readFileSync(jsonPath, "utf8"));
-    const finalNative = fs
-      .readFileSync(nativePath, "utf8")
-      .split("\n")
-      .filter((line) => line.trim() && !line.includes("encrypted"));
-
-    console.log(`   JSON: ${finalJson.length} messages`);
-    console.log(`   Native: ${finalNative.length} lines`);
-
-    console.log("\n🔍 Sample synchronized messages:");
-    finalJson.slice(0, 3).forEach((msg) => {
-      console.log(
-        `   ${msg.messageTime} - ${msg.formattedName}: ${msg.messageBody}`
+  after(function () {
+    // Clean up backup files
+    try {
+      const { execSync } = require("child_process");
+      execSync(
+        `find ${testDir} -name "*.backup.*" -delete 2>/dev/null || true`,
+        { stdio: "ignore" }
       );
+    } catch (error) {
+      // Ignore cleanup errors
+    }
+  });
+
+  describe("Test data setup", function () {
+    it("should have created test directory", function () {
+      expect(fs.existsSync(testDir)).to.be.true;
     });
-  } catch (error) {
-    console.error("❌ Sync failed:", error.message);
-  }
 
-  console.log(`\n📁 Test files saved in: ${testDir}/`);
-}
+    it("should have created JSON file", function () {
+      const jsonPath = path.join(testDir, "chats.json");
+      expect(fs.existsSync(jsonPath)).to.be.true;
 
-if (require.main === module) {
-  testSync();
-}
+      const jsonData = JSON.parse(fs.readFileSync(jsonPath, "utf8"));
+      expect(jsonData).to.be.an("array");
+      expect(jsonData.length).to.equal(2);
+    });
+
+    it("should have created native file", function () {
+      const nativePath = path.join(
+        testDir,
+        "native_backups",
+        "WhatsApp Chat with +12 345 67 89 0.txt"
+      );
+      expect(fs.existsSync(nativePath)).to.be.true;
+
+      const content = fs.readFileSync(nativePath, "utf8");
+      expect(content).to.include("Hello from Native!");
+      expect(content).to.include("EU format message");
+    });
+
+    it("should have created media directories", function () {
+      const mediaTypes = ["image", "document", "video", "audio"];
+      mediaTypes.forEach((type) => {
+        const dirPath = path.join(testDir, type);
+        expect(fs.existsSync(dirPath)).to.be.true;
+      });
+    });
+  });
+
+  describe("Synchronization process", function () {
+    it("should run synchronization without errors", function () {
+      const initialJsonSize = fs.statSync(
+        path.join(testDir, "chats.json")
+      ).size;
+
+      expect(() => {
+        syncFormats(testDir);
+      }).to.not.throw();
+
+      console.log(
+        `    📊 Initial state: JSON: ${this.testStats.jsonMessages} messages`
+      );
+
+      // Check that files still exist after sync
+      expect(fs.existsSync(path.join(testDir, "chats.json"))).to.be.true;
+      expect(
+        fs.existsSync(
+          path.join(
+            testDir,
+            "native_backups",
+            "WhatsApp Chat with +12 345 67 89 0.txt"
+          )
+        )
+      ).to.be.true;
+    });
+
+    it("should have synchronized the files", function () {
+      const jsonPath = path.join(testDir, "chats.json");
+      const jsonData = JSON.parse(fs.readFileSync(jsonPath, "utf8"));
+
+      expect(jsonData.length).to.be.greaterThan(2); // Should have more messages after sync
+      console.log(`    📊 Final state: JSON: ${jsonData.length} messages`);
+    });
+
+    it("should preserve chronological order", function () {
+      const jsonPath = path.join(testDir, "chats.json");
+      const jsonData = JSON.parse(fs.readFileSync(jsonPath, "utf8"));
+
+      // Check that messages are in chronological order
+      for (let i = 1; i < jsonData.length; i++) {
+        const prevTime = new Date(jsonData[i - 1].messageTime);
+        const currTime = new Date(jsonData[i].messageTime);
+        expect(currTime.getTime()).to.be.greaterThanOrEqual(prevTime.getTime());
+      }
+    });
+  });
+
+  describe("Sync function", function () {
+    it("should be a valid function", function () {
+      expect(syncFormats).to.be.a("function");
+    });
+  });
+});

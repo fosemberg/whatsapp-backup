@@ -4,11 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo '🧪 Running all tests...' && for file in tests/test-*.js; do echo \"\\n📋 Running $(basename \"$file\")...\"; node \"$file\" || exit 1; done && echo '\\n✅ All tests completed successfully!' && npm run clean-test-backups",
+    "test": "mocha",
+    "test:legacy": "echo '🧪 Running all tests (legacy)...' && for file in tests/test-*.js; do echo \"\\n📋 Running $(basename \"$file\")...\"; node \"$file\" || exit 1; done && echo '\\n✅ All tests completed successfully!' && npm run clean-test-backups",
     "test:debug": "echo '🔧 Running debug tools...' && for file in tests/analyze-*.js tests/debug-*.js tests/find-*.js; do [ -f \"$file\" ] && echo \"\\n📋 Running $(basename \"$file\")...\" && node \"$file\"; done",
     "test:converters": "node tests/test-converters.js && npm run clean-test-backups",
     "test:sync": "node tests/test-sync.js && npm run clean-test-backups",
     "test:dedup": "node tests/test-deduplication.js && npm run clean-test-backups",
+    "test:spec": "mocha --reporter spec",
+    "test:json": "mocha --reporter json",
+    "test:dot": "mocha --reporter dot",
     "clean-test-backups": "echo '🧹 Cleaning test backup files...' && find tests/data -name '*.backup.*' -delete 2>/dev/null || true && echo '✅ Test backup files cleaned'",
     "copy-input-example-to-data": "cp -r data/input.example data/input",
     "prepare-output": "mkdir -p data/output && mkdir -p data/output/web && mkdir -p data/output/pdf",
@@ -27,7 +31,9 @@
   "license": "ISC",
   "devDependencies": {
     "array.prototype.flatmap": "^1.2.4",
+    "chai": "^5.2.1",
     "http-server": "^0.12.3",
+    "mocha": "^11.7.1",
     "puppeteer": "^5.5.0"
   }
 }

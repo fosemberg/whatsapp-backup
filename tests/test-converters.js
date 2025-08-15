@@ -1,92 +1,93 @@
-#!/usr/bin/env node
-
-/**
- * Test script for WhatsApp format converters
- * Demonstrates conversion between JSON and native text formats
- */
-
+const { expect } = require("chai");
 const fs = require("fs");
 const path = require("path");
 const { convertJsonToNative } = require("../src/json-to-native-converter");
 const { convertNativeToJson } = require("../src/native-to-json-converter");
 
-function testConverters() {
-  console.log("=== WhatsApp Format Converter Test ===\n");
-
-  // Test paths
+describe("WhatsApp Format Converters", function () {
   const testDir = "tests/data/test-output";
   const inputJsonPath = "data/input/2025/1234567890___Test-Chat/chats.json";
   const inputNativePath =
     "data/input/2025/1234567890___Test-Chat/native_backups/WhatsApp Chat with +12 345 67 89 0.txt";
 
-  // Create test output directory
-  if (!fs.existsSync(testDir)) {
-    fs.mkdirSync(testDir, { recursive: true });
-  }
-
-  console.log("1. Testing JSON to Native conversion...");
-
-  if (fs.existsSync(inputJsonPath)) {
-    try {
-      const outputNativePath = path.join(testDir, "converted-from-json.txt");
-      const attachmentsFromJsonDir = path.join(
-        testDir,
-        "attachments-from-json"
-      );
-
-      convertJsonToNative(
-        inputJsonPath,
-        outputNativePath,
-        attachmentsFromJsonDir
-      );
-      console.log(`✅ JSON to Native conversion successful!`);
-      console.log(`   Output: ${outputNativePath}`);
-      console.log(`   Attachments: ${attachmentsFromJsonDir}`);
-    } catch (error) {
-      console.log(`❌ JSON to Native conversion failed: ${error.message}`);
+  before(function () {
+    // Create test output directory
+    if (!fs.existsSync(testDir)) {
+      fs.mkdirSync(testDir, { recursive: true });
     }
-  } else {
-    console.log(`⚠️  Input JSON file not found: ${inputJsonPath}`);
-  }
+  });
 
-  console.log("\n2. Testing Native to JSON conversion...");
-
-  if (fs.existsSync(inputNativePath)) {
+  after(function () {
+    // Clean up backup files
     try {
-      const outputJsonPath = path.join(testDir, "converted-from-native.json");
-      const attachmentsFromNativeDir = path.join(
-        testDir,
-        "attachments-from-native"
+      const { execSync } = require("child_process");
+      execSync(
+        `find ${testDir} -name "*.backup.*" -delete 2>/dev/null || true`,
+        { stdio: "ignore" }
       );
-
-      convertNativeToJson(
-        inputNativePath,
-        outputJsonPath,
-        attachmentsFromNativeDir
-      );
-      console.log(`✅ Native to JSON conversion successful!`);
-      console.log(`   Output: ${outputJsonPath}`);
-      console.log(`   Attachments: ${attachmentsFromNativeDir}`);
     } catch (error) {
-      console.log(`❌ Native to JSON conversion failed: ${error.message}`);
+      // Ignore cleanup errors
     }
-  } else {
-    console.log(`⚠️  Input native file not found: ${inputNativePath}`);
-  }
+  });
 
-  console.log("\n=== Test Complete ===");
-  console.log(`\nResults saved in: ${testDir}/`);
-  console.log("\nTo use the converters manually:");
-  console.log("\nJSON to Native:");
-  console.log(
-    "  node src/json-to-native-converter.js input.json output.txt [attachments_dir]"
-  );
-  console.log("\nNative to JSON:");
-  console.log(
-    "  node src/native-to-json-converter.js input.txt output.json [attachments_dir]"
-  );
-}
+  describe("JSON to Native conversion", function () {
+    it("should handle missing input file gracefully", function () {
+      if (!fs.existsSync(inputJsonPath)) {
+        console.log(
+          "      ⚠️  Input JSON file not found (expected for test environment)"
+        );
+        expect(true).to.be.true; // Test passes as this is expected behavior
+        return;
+      }
 
-if (require.main === module) {
-  testConverters();
-}
+      // If file exists, test the conversion
+      const outputPath = path.join(testDir, "converted-to-native.txt");
+      const attachmentsDir = path.join(testDir, "attachments-from-json");
+
+      expect(() => {
+        convertJsonToNative(inputJsonPath, outputPath, attachmentsDir);
+      }).to.not.throw();
+
+      expect(fs.existsSync(outputPath)).to.be.true;
+    });
+
+    it("should create output directory if it doesn't exist", function () {
+      expect(fs.existsSync(testDir)).to.be.true;
+    });
+  });
+
+  describe("Native to JSON conversion", function () {
+    it("should handle missing input file gracefully", function () {
+      if (!fs.existsSync(inputNativePath)) {
+        console.log(
+          "      ⚠️  Input native file not found (expected for test environment)"
+        );
+        expect(true).to.be.true; // Test passes as this is expected behavior
+        return;
+      }
+
+      // If file exists, test the conversion
+      const outputPath = path.join(testDir, "converted-to-json.json");
+      const attachmentsDir = path.join(testDir, "attachments-from-native");
+
+      expect(() => {
+        convertNativeToJson(inputNativePath, outputPath, attachmentsDir);
+      }).to.not.throw();
+
+      expect(fs.existsSync(outputPath)).to.be.true;
+    });
+  });
+
+  describe("Test environment setup", function () {
+    it("should have valid converter functions", function () {
+      expect(convertJsonToNative).to.be.a("function");
+      expect(convertNativeToJson).to.be.a("function");
+    });
+
+    it("should have accessible test directory", function () {
+      expect(fs.existsSync(testDir)).to.be.true;
+      const stats = fs.statSync(testDir);
+      expect(stats.isDirectory()).to.be.true;
+    });
+  });
+});

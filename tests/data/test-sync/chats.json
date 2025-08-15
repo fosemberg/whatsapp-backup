@@ -1,12 +1,22 @@
 [
   {
-    "country": "Test Country",
     "phoneNum": "+1234567890",
     "formattedName": "Test User",
+    "displayName": "Test User",
     "messageTime": "2025-01-01 12:00:00",
     "messageType": "chat",
     "messageBody": "Hello from JSON!",
-    "messageId": "json_001"
+    "messageId": "test1"
+  },
+  {
+    "country": "Unknown",
+    "phoneNum": "+1234567890",
+    "formattedName": "Test User",
+    "displayName": "Test User",
+    "messageTime": "2025-01-01 12:01:00",
+    "messageType": "chat",
+    "messageBody": "Hello from Native!",
+    "messageId": "false_sync@c.us_5465737420557365"
   },
   {
     "country": "Unknown",
@@ -15,34 +25,24 @@
     "displayName": "Test User",
     "messageTime": "2025-01-01 12:02:00",
     "messageType": "chat",
-    "messageBody": "Hello from Native!",
+    "messageBody": "Another message from native",
     "messageId": "false_sync@c.us_5465737420557365"
   },
   {
-    "country": "Test Country",
     "phoneNum": "+1234567890",
     "formattedName": "Test User",
-    "messageTime": "2025-01-01 12:05:00",
+    "displayName": "Test User",
+    "messageTime": "2025-01-01 12:03:00",
     "messageType": "image",
     "messageBody": "sample.jpg",
-    "messageId": "json_002"
+    "messageId": "test2"
   },
   {
     "country": "Unknown",
     "phoneNum": "+1234567890",
     "formattedName": "Test User",
     "displayName": "Test User",
-    "messageTime": "2025-01-01 12:07:30",
-    "messageType": "chat",
-    "messageBody": "Hello with EU brackets format!",
-    "messageId": "false_sync@c.us_5465737420557365"
-  },
-  {
-    "country": "Unknown",
-    "phoneNum": "+1234567890",
-    "formattedName": "Test User",
-    "displayName": "Test User",
-    "messageTime": "2025-01-01 12:08:00",
+    "messageTime": "2025-01-01 12:04:00",
     "messageType": "pdf",
     "messageBody": "document.pdf",
     "messageId": "false_sync@c.us_5465737420557365"
@@ -52,9 +52,29 @@
     "phoneNum": "+1234567890",
     "formattedName": "Test User",
     "displayName": "Test User",
-    "messageTime": "2025-01-01 12:10:15",
+    "messageTime": "2025-01-01 12:05:30",
     "messageType": "chat",
-    "messageBody": "Hello with EU no-brackets format!",
+    "messageBody": "EU format message",
+    "messageId": "false_sync@c.us_5465737420557365"
+  },
+  {
+    "country": "Unknown",
+    "phoneNum": "+1234567890",
+    "formattedName": "Test User",
+    "displayName": "Test User",
+    "messageTime": "2025-01-01 12:06:15",
+    "messageType": "chat",
+    "messageBody": "EU no brackets message",
+    "messageId": "false_sync@c.us_5465737420557365"
+  },
+  {
+    "country": "Unknown",
+    "phoneNum": "+1234567890",
+    "formattedName": "Test User",
+    "displayName": "Test User",
+    "messageTime": "2025-01-01 12:07:00",
+    "messageType": "chat",
+    "messageBody": "Final message",
     "messageId": "false_sync@c.us_5465737420557365"
   }
 ]
