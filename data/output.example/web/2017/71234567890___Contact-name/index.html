@@ -67,19 +67,10 @@ pre {
     if (configResponse.ok) {
       return await configResponse.json()
     } else {
-      // get notMyPhone from url, than get another phone as mine
-      const notMyPhoneMatch = window.location.href.match(/\d{11}/)
-      let myPhone
-      if (notMyPhoneMatch) {
-        const notMyPhone = notMyPhoneMatch[0]
-        const allPhones = Array.from(new Set(chats.map(({UserPhone}) => UserPhone)))
-        myPhone = allPhones.filter(phone => phone !== notMyPhone)[0]
-      } else {
-        // get myPhone as first phone in chats
-        myPhone = chats[0].UserPhone
-      }
+      // Fallback config - recommend creating config.json instead
+      console.warn('Config not found, using fallback. Please create config.json');
       return {
-        myPhone
+        myIdentifiers: ["You"]
       }
     }
   }
@@ -88,9 +79,9 @@ pre {
   const chatsResponse = await fetch('./chats.json')
   const chats = await chatsResponse.json()
 
-  const { myPhone } = await getConfig(chats)
+  const { myIdentifiers } = await getConfig(chats)
 
-  console.log('myPhone', myPhone)
+  console.log('myIdentifiers', myIdentifiers)
   console.log('chats', chats)
 
   // Initialize htm with Preact
@@ -107,7 +98,7 @@ pre {
         ? MessageBody.replace(cleanMediaLink, '')
         : MessageBody
 	    return (
-        html`<div class="message message_${myPhone === UserPhone ? 'my' : 'not-my'}">
+        html`<div class="message message_${myIdentifiers.includes(UserPhone) ? 'my' : 'not-my'}">
           <div class="message__body">
             <pre>${cleanMessageBody}</pre>
             ${isImage && html`<img class="message__img" src="${cleanMediaLink}"></img>`}

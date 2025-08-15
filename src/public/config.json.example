@@ -1,3 +1,7 @@
 {
-  "myPhone": "12345678901"
+  "myIdentifiers": [
+    "You",
+    "Your Name Here", 
+    "+1234567890"
+  ]
 }

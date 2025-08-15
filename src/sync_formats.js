@@ -1211,4 +1211,6 @@ module.exports = {
   mergeMessages,
   normalizeDate,
   resetConfigCache,
+  loadConfig,
+  isMyMessage,
 };

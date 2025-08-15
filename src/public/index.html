@@ -161,27 +161,12 @@ pre {
     const configResponse = await fetch('./config.json', {cache: "no-store"});
     if (configResponse.ok) {
       const config = await configResponse.json();
-      // Ensure backward compatibility
-      if (!config.myIdentifiers && config.myPhone) {
-        config.myIdentifiers = [config.myPhone];
-      }
       return config;
     } else {
-      // get notMyPhone from url, than get another phone as mine
-      const notMyPhoneMatch = window.location.href.match(/\d{11}/)
-      let myPhone
-      if (notMyPhoneMatch) {
-        const notMyPhone = notMyPhoneMatch[0]
-        const allPhones = Array.from(new Set(chats.map(({phoneNum}) => phoneNum)))
-        myPhone = allPhones.filter(phone => !phone.includes(notMyPhone))[0]
-      } else {
-        // get myPhone as first phone in chats
-        myPhone = chats[0].phoneNum
-      }
+      console.error('Config file not found! Please create src/public/config.json');
       return {
-        myPhone,
-        myIdentifiers: [myPhone]
-      }
+        myIdentifiers: ["You"]
+      };
     }
   }
 
@@ -189,9 +174,8 @@ pre {
   const chatsResponse = await fetch('./chats.json')
   const chats = await chatsResponse.json()
 
-  const { myPhone, myIdentifiers } = await getConfig(chats)
+  const { myIdentifiers } = await getConfig(chats)
 
-  console.log('myPhone', myPhone)
   console.log('myIdentifiers', myIdentifiers)
   
   // Fullscreen modal functionality
@@ -253,10 +237,6 @@ pre {
     }
     // Check formattedName as fallback
     if (chat.formattedName && myIdentifiers.includes(chat.formattedName)) {
-      return true;
-    }
-    // Legacy check for backward compatibility
-    if (myPhone === chat.phoneNum) {
       return true;
     }
     return false;
