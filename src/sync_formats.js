@@ -26,66 +26,87 @@ const DATE_FORMATS = {
 
 // Normalize various date formats to standard ISO format
 function normalizeDate(dateStr) {
-  let date;
+  let year,
+    month,
+    day,
+    hour,
+    minute,
+    second = 0;
 
   // Try US format: "3/4/25, 0:50"
   const usMatch = dateStr.match(DATE_FORMATS.US);
   if (usMatch) {
-    let [, month, day, year, hour, minute] = usMatch;
+    let [, monthStr, dayStr, yearStr, hourStr, minuteStr] = usMatch;
 
     // Handle 2-digit years
-    if (year.length === 2) {
-      year = parseInt(year) > 50 ? `19${year}` : `20${year}`;
+    if (yearStr.length === 2) {
+      yearStr = parseInt(yearStr) > 50 ? `19${yearStr}` : `20${yearStr}`;
     }
 
-    date = new Date(
-      parseInt(year),
-      parseInt(month) - 1,
-      parseInt(day),
-      parseInt(hour),
-      parseInt(minute)
-    );
+    year = parseInt(yearStr);
+    month = parseInt(monthStr);
+    day = parseInt(dayStr);
+    hour = parseInt(hourStr);
+    minute = parseInt(minuteStr);
   }
 
   // Try EU format: "[20.06.2025, 12:29:30]"
   const euMatch = dateStr.match(DATE_FORMATS.EU);
   if (euMatch) {
-    const [, day, month, year, hour, minute, second] = euMatch;
-    date = new Date(
-      parseInt(year),
-      parseInt(month) - 1,
-      parseInt(day),
-      parseInt(hour),
-      parseInt(minute),
-      parseInt(second)
-    );
+    const [, dayStr, monthStr, yearStr, hourStr, minuteStr, secondStr] =
+      euMatch;
+    year = parseInt(yearStr);
+    month = parseInt(monthStr);
+    day = parseInt(dayStr);
+    hour = parseInt(hourStr);
+    minute = parseInt(minuteStr);
+    second = parseInt(secondStr);
   }
 
   // Try EU format without brackets: "04.07.2025, 20:27:42"
   const euNoBracketsMatch = dateStr.match(DATE_FORMATS.EU_NO_BRACKETS);
   if (euNoBracketsMatch) {
-    const [, day, month, year, hour, minute, second] = euNoBracketsMatch;
-    date = new Date(
-      parseInt(year),
-      parseInt(month) - 1,
-      parseInt(day),
-      parseInt(hour),
-      parseInt(minute),
-      parseInt(second)
-    );
+    const [, dayStr, monthStr, yearStr, hourStr, minuteStr, secondStr] =
+      euNoBracketsMatch;
+    year = parseInt(yearStr);
+    month = parseInt(monthStr);
+    day = parseInt(dayStr);
+    hour = parseInt(hourStr);
+    minute = parseInt(minuteStr);
+    second = parseInt(secondStr);
   }
 
   // Try ISO format: "2025-02-28 18:50:57"
-  if (!date && dateStr.match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/)) {
-    date = new Date(dateStr.replace(" ", "T"));
+  const isoMatch = dateStr.match(
+    /^(\d{4})-(\d{2})-(\d{2})\s+(\d{1,2}):(\d{2}):(\d{2})$/
+  );
+  if (isoMatch) {
+    const [, yearStr, monthStr, dayStr, hourStr, minuteStr, secondStr] =
+      isoMatch;
+    year = parseInt(yearStr);
+    month = parseInt(monthStr);
+    day = parseInt(dayStr);
+    hour = parseInt(hourStr);
+    minute = parseInt(minuteStr);
+    second = parseInt(secondStr);
   }
 
-  if (!date || isNaN(date.getTime())) {
+  if (!year || !month || !day || hour === undefined || minute === undefined) {
     console.warn(`Could not parse date: ${dateStr}`);
+    // Fallback - try to parse as-is and format it
+    const date = new Date(dateStr.replace(" ", "T"));
+    if (!isNaN(date.getTime())) {
+      return date.toISOString().slice(0, 19).replace("T", " ");
+    }
     return new Date().toISOString().slice(0, 19).replace("T", " ");
   }
 
-  return date.toISOString().slice(0, 19).replace("T", " ");
+  // Create ISO-like string without timezone conversion
+  return `${year}-${month.toString().padStart(2, "0")}-${day
+    .toString()
+    .padStart(2, "0")} ${hour.toString().padStart(2, "0")}:${minute
+    .toString()
+    .padStart(2, "0")}:${second.toString().padStart(2, "0")}`;
 }
 
 // Parse native WhatsApp file into structured messages
@@ -746,13 +767,48 @@ function messagesToNative(messages) {
 
 // Convert ISO date to native WhatsApp format, preserving original format
 function convertToNativeDate(isoDate, originalFormat = "US") {
-  const date = new Date(isoDate);
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
-  const year = date.getFullYear();
-  const hours = date.getHours();
-  const minutes = date.getMinutes().toString().padStart(2, "0");
-  const seconds = date.getSeconds().toString().padStart(2, "0");
+  // Parse our custom ISO-like format: "2025-08-11 13:11:00"
+  const match = isoDate.match(
+    /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/
+  );
+  if (!match) {
+    console.warn(`Could not parse ISO date: ${isoDate}`);
+    const date = new Date(isoDate);
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    const year = date.getFullYear();
+    const hours = date.getHours();
+    const minutes = date.getMinutes().toString().padStart(2, "0");
+    const seconds = date.getSeconds().toString().padStart(2, "0");
+
+    switch (originalFormat) {
+      case "EU":
+        return `[${day.toString().padStart(2, "0")}.${month
+          .toString()
+          .padStart(2, "0")}.${year}, ${hours
+          .toString()
+          .padStart(2, "0")}:${minutes}:${seconds}]`;
+      case "EU_NO_BRACKETS":
+        return `${day.toString().padStart(2, "0")}.${month
+          .toString()
+          .padStart(2, "0")}.${year}, ${hours
+          .toString()
+          .padStart(2, "0")}:${minutes}:${seconds}`;
+      default:
+        const shortYear = year.toString().slice(-2);
+        return `${month}/${day}/${shortYear}, ${hours
+          .toString()
+          .padStart(2, "0")}:${minutes}`;
+    }
+  }
+
+  const [, yearStr, monthStr, dayStr, hourStr, minuteStr, secondStr] = match;
+  const year = parseInt(yearStr);
+  const month = parseInt(monthStr);
+  const day = parseInt(dayStr);
+  const hours = parseInt(hourStr);
+  const minutes = minuteStr;
+  const seconds = secondStr;
 
   switch (originalFormat) {
     case "EU":
