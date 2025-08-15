@@ -9,6 +9,51 @@
 
 const fs = require("fs");
 const path = require("path");
+
+// Load configuration for universal sender identification
+let configCache = null;
+function loadConfig(customConfigPath = null) {
+  if (!configCache) {
+    try {
+      // Use custom config path if provided (for tests), otherwise use main config
+      const configPath =
+        customConfigPath || path.join(__dirname, "public", "config.json");
+      const configData = fs.readFileSync(configPath, "utf8");
+      configCache = JSON.parse(configData);
+      console.log(
+        `📖 Loaded config: ${
+          configCache.myIdentifiers?.length || 0
+        } my identifiers`
+      );
+    } catch (error) {
+      console.warn(
+        "⚠️ Could not load config.json, using default identification"
+      );
+      configCache = { myIdentifiers: ["You"] };
+    }
+  }
+  return configCache;
+}
+
+// Reset config cache (for tests)
+function resetConfigCache() {
+  configCache = null;
+}
+
+// Check if message is from the user (based on config)
+function isMyMessage(msg) {
+  const config = loadConfig();
+  const myIdentifiers = config.myIdentifiers || ["You"];
+
+  // Check formattedName and displayName against all my identifiers
+  const formattedName = (msg.formattedName || "").trim();
+  const displayName = (msg.displayName || "").trim();
+
+  return myIdentifiers.some(
+    (identifier) => identifier === formattedName || identifier === displayName
+  );
+}
+
 const { convertJsonToNative } = require("./json-to-native-converter");
 const { convertNativeToJson } = require("./native-to-json-converter");
 
@@ -513,29 +558,81 @@ function normalizeSenderName(msg, senderMapping = null) {
     return "SELF";
   }
 
-  // Basic phone normalization
+  // Basic phone normalization - most important for deduplication
   if (/^\+?\d+[\s\d\-\(\)]*$/.test(sender)) {
     return sender.replace(/[\s\-\(\)]/g, "");
   }
 
-  // Use display name if available
+  // For non-phone senders, use a consistent approach:
+  // 1. Try display name first (most stable)
+  // 2. Then try to extract a consistent short form
+  let normalizedName = sender;
+
   if (msg.displayName && msg.displayName.trim() !== "") {
-    return msg.displayName.trim();
+    normalizedName = msg.displayName.trim();
   }
 
-  // Extract short name from long names
-  return extractShortName(sender);
+  // Remove common prefixes/suffixes that might vary
+  normalizedName = normalizedName.replace(/^[~@]/, ""); // Remove ~ and @ prefixes
+
+  // For very long names, extract first meaningful part
+  if (normalizedName.length > 20) {
+    const parts = normalizedName.split(/[\s\-_]+/);
+    normalizedName = parts[0] || normalizedName.substring(0, 15);
+  }
+
+  return normalizedName;
 }
 
 // Create a stable hash for message content to ensure proper deduplication
 function createMessageHash(msg, senderMapping = null) {
   // Normalize message content for consistent hashing
-  const normalizedBody = (msg.messageBody || "").trim();
-  const normalizedSender = normalizeSenderName(msg, senderMapping);
+  const normalizedBody = (msg.messageBody || "").trim().toLowerCase();
+
+  // Robust deterministic sender normalization
+  let normalizedSender = (msg.formattedName || "").trim();
+
+  // Basic deterministic normalizations using config
+  if (isMyMessage(msg)) {
+    normalizedSender = "SELF";
+    // For my messages, normalize all my identifiers to SELF
+  } else if (/^\+?\d+[\s\d\-\(\)]*$/.test(normalizedSender)) {
+    // Normalize phone numbers
+    normalizedSender = normalizedSender.replace(/[\s\-\(\)]/g, "");
+  } else {
+    // For names, use first word/part for consistency across variations
+    // This handles cases like "Alice Johnson" vs "Alice"
+    const nameParts = normalizedSender.split(/\s+/);
+    if (nameParts.length > 0 && nameParts[0].length > 2) {
+      normalizedSender = nameParts[0];
+    }
+  }
+
   const normalizedType = msg.messageType || "chat";
 
-  // Create content-based hash WITHOUT timestamp for better deduplication
-  const content = `${normalizedSender}:${normalizedType}:${normalizedBody}`;
+  // For better deduplication, also include message time rounded to nearest minute
+  const messageDate = new Date(msg.messageTime);
+
+  // Check if date is valid
+  if (isNaN(messageDate.getTime())) {
+    console.warn(`Invalid date in message: ${msg.messageTime}`);
+    // Use timestamp as fallback
+    const fallbackDate = new Date(msg.timestamp || 0);
+    const roundedTime = Math.floor((msg.timestamp || 0) / 60000) * 60000; // Round to minute
+    var roundedTimeValue = roundedTime;
+  } else {
+    const roundedTime = new Date(
+      messageDate.getFullYear(),
+      messageDate.getMonth(),
+      messageDate.getDate(),
+      messageDate.getHours(),
+      messageDate.getMinutes()
+    );
+    var roundedTimeValue = roundedTime.getTime();
+  }
+
+  // Create content-based hash including rounded time for better precision
+  const content = `${normalizedSender}:${normalizedType}:${normalizedBody}:${roundedTimeValue}`;
 
   // Simple hash function
   let hash = 0;
@@ -550,12 +647,33 @@ function createMessageHash(msg, senderMapping = null) {
 
 // Create a time-aware hash for messages (includes rounded timestamp)
 function createTimeAwareHash(msg, senderMapping = null) {
-  const normalizedBody = (msg.messageBody || "").trim();
-  const normalizedSender = normalizeSenderName(msg, senderMapping);
+  const normalizedBody = (msg.messageBody || "").trim().toLowerCase();
+
+  // Robust deterministic sender normalization (same as createMessageHash)
+  let normalizedSender = (msg.formattedName || "").trim();
+
+  // Basic deterministic normalizations using config
+  if (isMyMessage(msg)) {
+    normalizedSender = "SELF";
+    // For my messages, normalize all my identifiers to SELF
+  } else if (/^\+?\d+[\s\d\-\(\)]*$/.test(normalizedSender)) {
+    // Normalize phone numbers
+    normalizedSender = normalizedSender.replace(/[\s\-\(\)]/g, "");
+  } else {
+    // For names, use first word/part for consistency across variations
+    // This handles cases like "Alice Johnson" vs "Alice"
+    const nameParts = normalizedSender.split(/\s+/);
+    if (nameParts.length > 0 && nameParts[0].length > 2) {
+      normalizedSender = nameParts[0];
+    }
+  }
+
   const normalizedType = msg.messageType || "chat";
 
   // Round timestamp to nearest 5 minutes for time tolerance
-  const roundedTimestamp = Math.floor(msg.timestamp / 300000) * 300000;
+  // Check if timestamp is valid
+  const timestamp = msg.timestamp || 0;
+  const roundedTimestamp = Math.floor(timestamp / 300000) * 300000;
 
   return `${normalizedSender}:${normalizedType}:${normalizedBody}:${roundedTimestamp}`;
 }
@@ -592,9 +710,9 @@ function mergeMessages(jsonMessages, nativeMessages) {
     `Merging ${jsonMessages.length} JSON messages with ${nativeMessages.length} native messages...`
   );
 
-  // Build intelligent sender mapping based on message analysis
-  console.log("🔍 Analyzing sender patterns for smart deduplication...");
-  const senderMapping = buildSenderMapping(jsonMessages, nativeMessages);
+  // Use deterministic deduplication without dynamic sender mapping
+  console.log("🔍 Using deterministic deduplication without smart mapping...");
+  const senderMapping = null; // Disable smart mapping for full determinism
 
   // First, deduplicate within each source
   const uniqueJsonMessages = deduplicateMessages(
@@ -608,15 +726,9 @@ function mergeMessages(jsonMessages, nativeMessages) {
     senderMapping
   );
 
-  console.log(`📋 Detected ${senderMapping.size} sender mappings:`);
-  Array.from(senderMapping.entries())
-    .slice(0, 5)
-    .forEach(([original, normalized]) => {
-      console.log(`   "${original}" → "${normalized}"`);
-    });
-  if (senderMapping.size > 5) {
-    console.log(`   ... and ${senderMapping.size - 5} more`);
-  }
+  console.log(
+    `📋 Using deterministic message comparison without sender mapping`
+  );
 
   const seenContentHashes = new Set();
   const seenTimeAwareHashes = new Set();
@@ -1098,4 +1210,5 @@ module.exports = {
   parseNativeFile,
   mergeMessages,
   normalizeDate,
+  resetConfigCache,
 };

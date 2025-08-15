@@ -1,7 +1,7 @@
 const { expect } = require("chai");
 const fs = require("fs");
 const path = require("path");
-const { syncFormats } = require("../src/sync_formats");
+const { syncFormats, resetConfigCache } = require("../src/sync_formats");
 
 describe("WhatsApp Small Sync Test", function () {
   const testDir = "tests/data/test-small-sync";
@@ -44,8 +44,8 @@ describe("WhatsApp Small Sync Test", function () {
     const nativeDir = path.join(testDir, "native_backups");
     fs.mkdirSync(nativeDir, { recursive: true });
 
-    const nativeContent = `1/1/25, 12:00 - Mike: Hello from JSON!
-1/1/25, 12:01 - Alice: Hi there!
+    const nativeContent = `1/1/25, 12:00 - You: Hello from JSON!
+1/1/25, 12:01 - Alice Johnson: Hi there!
 1/1/25, 12:02 - Alice: New message from native`;
 
     fs.writeFileSync(
@@ -67,6 +67,9 @@ describe("WhatsApp Small Sync Test", function () {
   }
 
   before(function () {
+    // Setup test config
+    resetConfigCache();
+
     this.testStats = createSmallTestData();
     console.log(`    ✅ Small test data created:`);
     console.log(`       📄 JSON: ${this.testStats.jsonMessages} messages`);
@@ -79,6 +82,9 @@ describe("WhatsApp Small Sync Test", function () {
   });
 
   after(function () {
+    // Reset config cache
+    resetConfigCache();
+
     // Clean up backup files
     try {
       const { execSync } = require("child_process");
@@ -212,7 +218,7 @@ describe("WhatsApp Small Sync Test", function () {
         fs.readFileSync(path.join(testDir, "chats.json"), "utf8")
       );
 
-      // Should have same count after second run
+      // Should have exactly the same count after second run (deterministic deduplication)
       expect(afterSecondRun.length).to.equal(beforeSecondRun.length);
     });
   });

@@ -2,5 +2,4 @@
 1/1/25, 12:00 - 
 1/1/25, 12:00 - You: Hello from JSON!
 1/1/25, 12:01 - Alice: Hi there!
-1/1/25, 12:01 - Alice: Hi there!
 1/1/25, 12:02 - Alice: New message from native

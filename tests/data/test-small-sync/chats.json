@@ -22,16 +22,6 @@
     "phoneNum": null,
     "formattedName": "Alice",
     "displayName": "Alice",
-    "messageTime": "2025-01-01 12:01:00",
-    "messageType": "chat",
-    "messageBody": "Hi there!",
-    "messageId": "false_sync@c.us_416C6963655F3230"
-  },
-  {
-    "country": "Unknown",
-    "phoneNum": null,
-    "formattedName": "Alice",
-    "displayName": "Alice",
     "messageTime": "2025-01-01 12:02:00",
     "messageType": "chat",
     "messageBody": "New message from native",
