@@ -3,7 +3,6 @@
 1/1/25, 12:00 - You: Hello from JSON!
 1/1/25, 12:00 - Mike Smith: Hello from JSON!
 1/1/25, 12:01 - Alice: Hi there!
-1/1/25, 12:01 - +1555987654: Hi there!
 1/1/25, 12:02 - Alice: photo.jpg (file attached)
 1/1/25, 12:03 - Bob Smith Engineering Team Lead: Unique message from Bob
 1/1/25, 12:04 - +15551234567890: Another message from main user

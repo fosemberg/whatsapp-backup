@@ -28,15 +28,6 @@
     "messageId": "json2"
   },
   {
-    "country": "Unknown",
-    "phoneNum": "+1555987654",
-    "formattedName": "+1555987654",
-    "messageTime": "2025-01-01 12:01:00",
-    "messageType": "chat",
-    "messageBody": "Hi there!",
-    "messageId": "false_sync@c.us_2B31353535393837"
-  },
-  {
     "phoneNum": "+1555987654",
     "formattedName": "Alice",
     "displayName": "Alice",

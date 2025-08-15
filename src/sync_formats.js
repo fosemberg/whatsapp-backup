@@ -589,24 +589,9 @@ function createMessageHash(msg, senderMapping = null) {
   // Normalize message content for consistent hashing
   const normalizedBody = (msg.messageBody || "").trim().toLowerCase();
 
-  // Robust deterministic sender normalization
-  let normalizedSender = (msg.formattedName || "").trim();
-
-  // Basic deterministic normalizations using config
-  if (isMyMessage(msg)) {
-    normalizedSender = "SELF";
-    // For my messages, normalize all my identifiers to SELF
-  } else if (/^\+?\d+[\s\d\-\(\)]*$/.test(normalizedSender)) {
-    // Normalize phone numbers
-    normalizedSender = normalizedSender.replace(/[\s\-\(\)]/g, "");
-  } else {
-    // For names, use first word/part for consistency across variations
-    // This handles cases like "Alice Johnson" vs "Alice"
-    const nameParts = normalizedSender.split(/\s+/);
-    if (nameParts.length > 0 && nameParts[0].length > 2) {
-      normalizedSender = nameParts[0];
-    }
-  }
+  // Simplified sender classification: only "SELF" vs "OTHER"
+  // Focus on content-based deduplication, not sender metadata variations
+  const senderType = isMyMessage(msg) ? "SELF" : "OTHER";
 
   const normalizedType = msg.messageType || "chat";
 
@@ -631,8 +616,8 @@ function createMessageHash(msg, senderMapping = null) {
     var roundedTimeValue = roundedTime.getTime();
   }
 
-  // Create content-based hash including rounded time for better precision
-  const content = `${normalizedSender}:${normalizedType}:${normalizedBody}:${roundedTimeValue}`;
+  // Create content-based hash focusing on message essence, not sender metadata
+  const content = `${senderType}:${normalizedType}:${normalizedBody}:${roundedTimeValue}`;
 
   // Simple hash function
   let hash = 0;
@@ -649,24 +634,9 @@ function createMessageHash(msg, senderMapping = null) {
 function createTimeAwareHash(msg, senderMapping = null) {
   const normalizedBody = (msg.messageBody || "").trim().toLowerCase();
 
-  // Robust deterministic sender normalization (same as createMessageHash)
-  let normalizedSender = (msg.formattedName || "").trim();
-
-  // Basic deterministic normalizations using config
-  if (isMyMessage(msg)) {
-    normalizedSender = "SELF";
-    // For my messages, normalize all my identifiers to SELF
-  } else if (/^\+?\d+[\s\d\-\(\)]*$/.test(normalizedSender)) {
-    // Normalize phone numbers
-    normalizedSender = normalizedSender.replace(/[\s\-\(\)]/g, "");
-  } else {
-    // For names, use first word/part for consistency across variations
-    // This handles cases like "Alice Johnson" vs "Alice"
-    const nameParts = normalizedSender.split(/\s+/);
-    if (nameParts.length > 0 && nameParts[0].length > 2) {
-      normalizedSender = nameParts[0];
-    }
-  }
+  // Simplified sender classification: only "SELF" vs "OTHER"
+  // Focus on content-based deduplication, not sender metadata variations
+  const senderType = isMyMessage(msg) ? "SELF" : "OTHER";
 
   const normalizedType = msg.messageType || "chat";
 
@@ -675,7 +645,7 @@ function createTimeAwareHash(msg, senderMapping = null) {
   const timestamp = msg.timestamp || 0;
   const roundedTimestamp = Math.floor(timestamp / 300000) * 300000;
 
-  return `${normalizedSender}:${normalizedType}:${normalizedBody}:${roundedTimestamp}`;
+  return `${senderType}:${normalizedType}:${normalizedBody}:${roundedTimestamp}`;
 }
 
 // Deduplicate messages within a single source
@@ -1213,4 +1183,6 @@ module.exports = {
   resetConfigCache,
   loadConfig,
   isMyMessage,
+  createMessageHash,
+  createTimeAwareHash,
 };
