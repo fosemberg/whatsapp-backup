@@ -78,18 +78,27 @@ function showSummary(chatDir) {
 
   console.log(`\n📊 Total: ${totalFiles} media files`);
 
-  // Check backups
-  const backups = fs
-    .readdirSync(chatDir)
-    .concat(
-      fs.existsSync(path.join(chatDir, "native_backups"))
-        ? fs.readdirSync(path.join(chatDir, "native_backups"))
-        : []
-    )
-    .filter((file) => file.includes(".backup."));
+  // Check centralized backups
+  const backupDir = path.join(process.cwd(), "backup");
+  let backupCount = 0;
+  if (fs.existsSync(backupDir)) {
+    const getAllBackupFiles = (dir) => {
+      let files = [];
+      const items = fs.readdirSync(dir, { withFileTypes: true });
+      for (const item of items) {
+        if (item.isDirectory()) {
+          files = files.concat(getAllBackupFiles(path.join(dir, item.name)));
+        } else if (item.name.includes(".backup.")) {
+          files.push(item.name);
+        }
+      }
+      return files;
+    };
+    backupCount = getAllBackupFiles(backupDir).length;
+  }
 
-  if (backups.length > 0) {
-    console.log(`\n💾 Backups created: ${backups.length} files`);
+  if (backupCount > 0) {
+    console.log(`\n💾 Backups created: ${backupCount} files in backup/ folder`);
   }
 
   console.log("\n✅ Synchronization complete!");

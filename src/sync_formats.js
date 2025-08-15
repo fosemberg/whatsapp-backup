@@ -59,14 +59,14 @@ const { convertNativeToJson } = require("./native-to-json-converter");
 
 // Regular expressions for different date formats in native file
 const DATE_FORMATS = {
-  US: /^(\d{1,2})\/(\d{1,2})\/(\d{2,4}), (\d{1,2}):(\d{2})/,
+  US: /^(\d{1,2})\/(\d{1,2})\/(\d{2,4}), (\d{1,2}):(\d{2})(?::(\d{2}))?/,
   EU: /^\[(\d{2})\.(\d{2})\.(\d{4}), (\d{2}):(\d{2}):(\d{2})\]/,
   EU_NO_BRACKETS: /^(\d{2})\.(\d{2})\.(\d{4}), (\d{2}):(\d{2}):(\d{2})/,
-  MESSAGE_US: /^(\d{1,2}\/\d{1,2}\/\d{2,4}, \d{1,2}:\d{2}) - (.+?): (.*)$/,
+  MESSAGE_US: /^(\d{1,2}\/\d{1,2}\/\d{2,4}, \d{1,2}:\d{2}(?::\d{2})?) - (.+?): (.*)$/,
   MESSAGE_EU: /^\[(\d{2}\.\d{2}\.\d{4}, \d{2}:\d{2}:\d{2})\] (.+?): (.*)$/,
   MESSAGE_EU_NO_BRACKETS:
     /^(\d{2}\.\d{2}\.\d{4}, \d{2}:\d{2}:\d{2}) (.+?): (.*)$/,
-  SYSTEM: /^(\d{1,2}\/\d{1,2}\/\d{2,4}, \d{1,2}:\d{2}) - (.*)$/,
+  SYSTEM: /^(\d{1,2}\/\d{1,2}\/\d{2,4}, \d{1,2}:\d{2}(?::\d{2})?) - (.*)$/,
 };
 
 // Normalize various date formats to standard ISO format
@@ -78,10 +78,10 @@ function normalizeDate(dateStr) {
     minute,
     second = 0;
 
-  // Try US format: "3/4/25, 0:50"
+  // Try US format: "3/4/25, 0:50" or "3/4/25, 0:50:30"
   const usMatch = dateStr.match(DATE_FORMATS.US);
   if (usMatch) {
-    let [, monthStr, dayStr, yearStr, hourStr, minuteStr] = usMatch;
+    let [, monthStr, dayStr, yearStr, hourStr, minuteStr, secondStr] = usMatch;
 
     // Handle 2-digit years
     if (yearStr.length === 2) {
@@ -93,6 +93,7 @@ function normalizeDate(dateStr) {
     day = parseInt(dayStr);
     hour = parseInt(hourStr);
     minute = parseInt(minuteStr);
+    second = secondStr ? parseInt(secondStr) : 0; // Handle optional seconds
   }
 
   // Try EU format: "[20.06.2025, 12:29:30]"
@@ -880,7 +881,7 @@ function convertToNativeDate(isoDate, originalFormat = "US") {
         const shortYear = year.toString().slice(-2);
         return `${month}/${day}/${shortYear}, ${hours
           .toString()
-          .padStart(2, "0")}:${minutes}`;
+          .padStart(2, "0")}:${minutes}:${seconds}`;
     }
   }
 
@@ -910,11 +911,11 @@ function convertToNativeDate(isoDate, originalFormat = "US") {
         .padStart(2, "0")}:${minutes}:${seconds}`;
 
     default:
-      // US format: M/D/YY, H:MM (with proper 24-hour format)
+      // US format: M/D/YY, H:MM:SS (with proper 24-hour format and seconds)
       const shortYear = year.toString().slice(-2);
       return `${month}/${day}/${shortYear}, ${hours
         .toString()
-        .padStart(2, "0")}:${minutes}`;
+        .padStart(2, "0")}:${minutes}:${seconds}`;
   }
 }
 
@@ -1100,17 +1101,50 @@ function syncFormats(chatDirectory) {
   console.log("\n🔄 Merging messages...");
   const mergedMessages = mergeMessages(jsonMessages, nativeMessages);
 
-  // Create backups
+  // Create centralized backups in backup/ folder
+  const backupDir = path.join(process.cwd(), "backup");
+  if (!fs.existsSync(backupDir)) {
+    fs.mkdirSync(backupDir, { recursive: true });
+  }
+
   if (hasJson) {
-    const backupPath = `${jsonPath}.backup.${Date.now()}`;
+    const timestamp = Date.now();
+    const relativePath = path.relative(process.cwd(), jsonPath);
+    const backupPath = path.join(
+      backupDir,
+      `${relativePath}.backup.${timestamp}`
+    );
+
+    // Ensure backup subdirectory exists
+    const backupSubDir = path.dirname(backupPath);
+    if (!fs.existsSync(backupSubDir)) {
+      fs.mkdirSync(backupSubDir, { recursive: true });
+    }
+
     fs.copyFileSync(jsonPath, backupPath);
-    console.log(`💾 Created backup: ${path.basename(backupPath)}`);
+    console.log(
+      `💾 Created backup: backup/${relativePath}.backup.${timestamp}`
+    );
   }
 
   if (hasNative) {
-    const backupPath = `${nativePath}.backup.${Date.now()}`;
+    const timestamp = Date.now();
+    const relativePath = path.relative(process.cwd(), nativePath);
+    const backupPath = path.join(
+      backupDir,
+      `${relativePath}.backup.${timestamp}`
+    );
+
+    // Ensure backup subdirectory exists
+    const backupSubDir = path.dirname(backupPath);
+    if (!fs.existsSync(backupSubDir)) {
+      fs.mkdirSync(backupSubDir, { recursive: true });
+    }
+
     fs.copyFileSync(nativePath, backupPath);
-    console.log(`💾 Created backup: ${path.basename(backupPath)}`);
+    console.log(
+      `💾 Created backup: backup/${relativePath}.backup.${timestamp}`
+    );
   }
 
   // Sync media files

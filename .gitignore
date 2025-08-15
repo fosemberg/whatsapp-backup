@@ -6,3 +6,4 @@ data/*
 config.json
 .npmrc
 test-output
+backup/
