@@ -1,0 +1,8 @@
+1/1/25, 12:00 - Messages and calls are end-to-end encrypted. Only people in this chat can read, listen to, or share them. Learn more.
+1/1/25, 12:00 - 
+1/1/25, 12:00 - Test User: Hello from JSON!
+1/1/25, 12:02 - Test User: Hello from Native!
+1/1/25, 12:05 - Test User: sample.jpg (file attached)
+[01.01.2025, 12:07:30] Test User: Hello with EU brackets format!
+1/1/25, 12:08 - Test User: document.pdf (file attached)
+01.01.2025, 12:10:15 Test User: Hello with EU no-brackets format!

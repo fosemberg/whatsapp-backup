@@ -6,12 +6,12 @@
 
 const fs = require("fs");
 const path = require("path");
-const { syncFormats } = require("./sync_formats");
+const { syncFormats } = require("../src/sync_formats");
 
 function createTestDataWithMixedDates() {
   console.log("=== Testing Date Format Preservation ===\n");
 
-  const testDir = "test-dates";
+  const testDir = "tests/data/test-dates";
 
   // Clean up and create test directory
   if (fs.existsSync(testDir)) {

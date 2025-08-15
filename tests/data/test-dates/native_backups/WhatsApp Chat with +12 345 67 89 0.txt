@@ -1,0 +1,8 @@
+1/1/25, 12:00 - Messages and calls are end-to-end encrypted. Only people in this chat can read, listen to, or share them. Learn more.
+1/1/25, 12:00 - 
+1/1/25, 12:00 - Test User: US format message
+[01.01.2025, 12:05:30] Test User: EU format with brackets
+01.01.2025, 12:10:15 Test User: EU format without brackets
+1/1/25, 12:15 - Test User: Another US format message
+[01.01.2025, 12:20:45] Test User: Another EU bracket message
+01.01.2025, 12:25:30 Test User: Another EU no-bracket message

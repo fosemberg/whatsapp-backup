@@ -1,0 +1,5 @@
+1/1/25, 12:00 - Messages and calls are end-to-end encrypted. Only people in this chat can read, listen to, or share them. Learn more.
+1/1/25, 12:00 - 
+1/1/25, 12:00 - You: Hello from JSON!
+1/1/25, 12:05 - Alice: Hi there!
+1/1/25, 12:10 - Alice: New message from native

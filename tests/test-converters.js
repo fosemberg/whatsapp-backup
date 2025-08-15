@@ -7,14 +7,14 @@
 
 const fs = require("fs");
 const path = require("path");
-const { convertJsonToNative } = require("./json-to-native-converter");
-const { convertNativeToJson } = require("./native-to-json-converter");
+const { convertJsonToNative } = require("../src/json-to-native-converter");
+const { convertNativeToJson } = require("../src/native-to-json-converter");
 
 function testConverters() {
   console.log("=== WhatsApp Format Converter Test ===\n");
 
   // Test paths
-  const testDir = "test-output";
+  const testDir = "tests/data/test-output";
   const inputJsonPath = "data/input/2025/1234567890___Test-Chat/chats.json";
   const inputNativePath =
     "data/input/2025/1234567890___Test-Chat/native_backups/WhatsApp Chat with +12 345 67 89 0.txt";

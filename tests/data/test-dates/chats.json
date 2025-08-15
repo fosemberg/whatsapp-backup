@@ -1,0 +1,62 @@
+[
+  {
+    "country": "Unknown",
+    "phoneNum": null,
+    "formattedName": "Test User",
+    "displayName": "Test User",
+    "messageTime": "2025-01-01 12:00:00",
+    "messageType": "chat",
+    "messageBody": "US format message",
+    "messageId": "false_sync@c.us_5465737420557365"
+  },
+  {
+    "country": "Unknown",
+    "phoneNum": null,
+    "formattedName": "Test User",
+    "displayName": "Test User",
+    "messageTime": "2025-01-01 12:05:30",
+    "messageType": "chat",
+    "messageBody": "EU format with brackets",
+    "messageId": "false_sync@c.us_5465737420557365"
+  },
+  {
+    "country": "Unknown",
+    "phoneNum": null,
+    "formattedName": "Test User",
+    "displayName": "Test User",
+    "messageTime": "2025-01-01 12:10:15",
+    "messageType": "chat",
+    "messageBody": "EU format without brackets",
+    "messageId": "false_sync@c.us_5465737420557365"
+  },
+  {
+    "country": "Unknown",
+    "phoneNum": null,
+    "formattedName": "Test User",
+    "displayName": "Test User",
+    "messageTime": "2025-01-01 12:15:00",
+    "messageType": "chat",
+    "messageBody": "Another US format message",
+    "messageId": "false_sync@c.us_5465737420557365"
+  },
+  {
+    "country": "Unknown",
+    "phoneNum": null,
+    "formattedName": "Test User",
+    "displayName": "Test User",
+    "messageTime": "2025-01-01 12:20:45",
+    "messageType": "chat",
+    "messageBody": "Another EU bracket message",
+    "messageId": "false_sync@c.us_5465737420557365"
+  },
+  {
+    "country": "Unknown",
+    "phoneNum": null,
+    "formattedName": "Test User",
+    "displayName": "Test User",
+    "messageTime": "2025-01-01 12:25:30",
+    "messageType": "chat",
+    "messageBody": "Another EU no-bracket message",
+    "messageId": "false_sync@c.us_5465737420557365"
+  }
+]

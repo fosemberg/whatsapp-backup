@@ -7,12 +7,12 @@
 
 const fs = require("fs");
 const path = require("path");
-const { syncFormats } = require("./sync_formats");
+const { syncFormats } = require("../src/sync_formats");
 
 function createTestData() {
   console.log("=== Creating Test WhatsApp Data ===\n");
 
-  const testDir = "test-sync";
+  const testDir = "tests/data/test-sync";
   const inputDir = testDir;
 
   // Create test directory

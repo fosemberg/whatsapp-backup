@@ -1,0 +1,49 @@
+[
+  {
+    "country": "Test Country",
+    "phoneNum": "+1555123456",
+    "formattedName": "You",
+    "messageTime": "2025-01-01 12:00:00",
+    "messageType": "chat",
+    "messageBody": "Hello from JSON!",
+    "messageId": "msg_001"
+  },
+  {
+    "country": "Test Country",
+    "phoneNum": "+1555987654",
+    "formattedName": "Alice Johnson Professional Chat",
+    "displayName": "Alice",
+    "messageTime": "2025-01-01 12:05:00",
+    "messageType": "chat",
+    "messageBody": "Hi there!",
+    "messageId": "msg_002"
+  },
+  {
+    "country": "Unknown",
+    "phoneNum": "+1555987654",
+    "formattedName": "+1555987654",
+    "messageTime": "2025-01-01 12:07:00",
+    "messageType": "chat",
+    "messageBody": "New message only in native",
+    "messageId": "false_sync@c.us_2B31353535393837"
+  },
+  {
+    "country": "Test Country",
+    "phoneNum": "+1555555555",
+    "formattedName": "Bob Smith Engineering Team Lead",
+    "displayName": "Bob",
+    "messageTime": "2025-01-01 12:10:00",
+    "messageType": "image",
+    "messageBody": "photo.jpg",
+    "messageId": "msg_003"
+  },
+  {
+    "country": "Unknown",
+    "phoneNum": "+15551234567890",
+    "formattedName": "+15551234567890",
+    "messageTime": "2025-01-01 12:15:00",
+    "messageType": "chat",
+    "messageBody": "Another message from phone format",
+    "messageId": "false_sync@c.us_2B31353535313233"
+  }
+]

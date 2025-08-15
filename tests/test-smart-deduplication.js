@@ -6,12 +6,12 @@
 
 const fs = require("fs");
 const path = require("path");
-const { syncFormats } = require("./sync_formats");
+const { syncFormats } = require("../src/sync_formats");
 
 function createUniversalTestData() {
   console.log("=== Testing Universal Smart Deduplication ===\n");
 
-  const testDir = "test-smart-dedup";
+  const testDir = "tests/data/test-smart-dedup";
 
   // Clean up and create test directory
   if (fs.existsSync(testDir)) {

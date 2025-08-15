@@ -6,10 +6,10 @@
 
 const fs = require("fs");
 const path = require("path");
-const { syncFormats } = require("./sync_formats");
+const { syncFormats } = require("../src/sync_formats");
 
 function createSmallTest() {
-  const testDir = "test-small-sync";
+  const testDir = "tests/data/test-small-sync";
 
   // Clean up and create test directory
   if (fs.existsSync(testDir)) {

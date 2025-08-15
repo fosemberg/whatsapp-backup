@@ -6,7 +6,7 @@
 
 const fs = require("fs");
 const path = require("path");
-const { parseJsonFile, parseNativeFile } = require("./sync_formats");
+const { parseJsonFile, parseNativeFile } = require("../src/sync_formats");
 
 // Normalize sender name for consistent comparison between JSON and Native formats
 // Import universal normalization functions from sync_formats.js

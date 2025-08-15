@@ -7,12 +7,12 @@
 
 const fs = require("fs");
 const path = require("path");
-const { syncFormats } = require("./sync_formats");
+const { syncFormats } = require("../src/sync_formats");
 
 function createTestDataForDeduplication() {
   console.log("=== Testing Deduplication ===\n");
 
-  const testDir = "test-dedup";
+  const testDir = "tests/data/test-dedup";
 
   // Clean up and create test directory
   if (fs.existsSync(testDir)) {

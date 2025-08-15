@@ -1,0 +1,7 @@
+1/1/25, 12:00 - Messages and calls are end-to-end encrypted. Only people in this chat can read, listen to, or share them. Learn more.
+1/1/25, 12:00 - 
+1/1/25, 12:00 - Test User: Hello world!
+1/1/25, 12:01 - Test User: photo1.jpg (file attached)
+1/1/25, 12:02 - Test User: document.pdf (file attached)
+1/1/25, 12:03 - Test User: video1.mp4 (file attached)
+1/1/25, 12:04 - Test User: audio1.mp3 (file attached)

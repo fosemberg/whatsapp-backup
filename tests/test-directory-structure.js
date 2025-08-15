@@ -6,13 +6,13 @@
 
 const fs = require("fs");
 const path = require("path");
-const { convertJsonToNative } = require("./json-to-native-converter");
-const { convertNativeToJson } = require("./native-to-json-converter");
+const { convertJsonToNative } = require("../src/json-to-native-converter");
+const { convertNativeToJson } = require("../src/native-to-json-converter");
 
 function createTestData() {
   console.log("=== Creating test data with proper directory structure ===\n");
 
-  const testDir = "test-structure";
+  const testDir = "tests/data/test-structure";
   const inputDir = path.join(testDir, "input");
   const outputDir = path.join(testDir, "output");
 
