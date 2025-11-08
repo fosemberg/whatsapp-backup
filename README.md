@@ -2,15 +2,52 @@
 
 A project created to store WhatsApp backups in HTML and PDF formats. To get started, you need to collect the backup as chats.json and attached message files. See below for how to create this data.
 
-## Running the project:
-- Install dependencies  
-```npm i```
-- Copy example data to the data folder  
-```npm run copy-input-example-to-data```
-- Build chats in HTML and run in browser  
-```npm run start```
-- Build PDFs. *while chats are running in browser  
-```npm run build-pdfs```
+## 🚀 Quick Start
+
+### New Automated Workflow (Recommended)
+1. Place WhatsApp zip exports in `data/input/YEAR/CONTACT/native_backups_new/`
+2. Run the automated appender: `npm run append-native-backups`
+3. Build and view: `npm run start`
+
+### Manual Workflow
+- Install dependencies: `npm i`
+- Copy example data: `npm run copy-input-example-to-data`
+- Build and run: `npm run start`
+- Build PDFs: `npm run build-pdfs`
+
+## 📦 Available Commands
+
+### Main Commands
+- `npm run append-native-backups` - **NEW!** Auto-process WhatsApp zip exports
+- `npm run start` - Build HTML and serve in browser
+- `npm run build-pdfs` - Generate PDF versions
+
+### Development
+- `npm run copy-input-example-to-data` - Copy example data
+- `npm test` - Run tests
+- `npm run clean-all-backups` - Clean backup files
+
+## 🎯 New Feature: Automated Native Backup Processing
+
+The new `append-native-backups` feature automates the entire WhatsApp backup import process:
+
+### ✅ What it does:
+- Finds all zip files in `native_backups_new` folders
+- Extracts and appends chat content to existing backups  
+- Copies all attachments to correct locations
+- Runs format synchronization automatically
+- Processes multiple directories and contacts
+
+### 📁 Expected structure:
+```
+data/input/2025/PHONE___CONTACT/
+├── native_backups/              # Existing backups  
+├── native_backups_new/          # Place new zip files here
+├── chats.json                   # Will be synced
+└── [media folders...]
+```
+
+See [APPEND_NATIVE_BACKUPS_README.md](APPEND_NATIVE_BACKUPS_README.md) for detailed documentation.
 
 ## Examples
 - [View PDF examples](data/output.example/pdf)

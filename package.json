@@ -22,7 +22,8 @@
     "build-web": "npm run prepare-output && npm run clear-web && npm run cp-data-to-web && npm run cp-public-to-web-folders && npm run cp-config-to-web-folders",
     "serve-web": "http-server data/output/web",
     "start": "npm run build-web && npm run serve-web",
-    "build-pdfs": "cd src && node make-pdfs.js"
+    "build-pdfs": "cd src && node make-pdfs.js",
+    "append-native-backups": "node src/append-native-backups.js"
   },
   "keywords": [],
   "author": "",
